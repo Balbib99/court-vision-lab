@@ -33,6 +33,14 @@ export const getStepPositions = (
   play: Play,
   stepIndex: number,
 ): Record<string, Position> => {
+  const snapshot = play.steps[stepIndex]?.playerPositions
+  if (snapshot) {
+    return Object.entries(snapshot).reduce<Record<string, Position>>((positions, [playerId, position]) => {
+      positions[playerId] = clampPosition(position)
+      return positions
+    }, {})
+  }
+
   const positions = getInitialPositions(play.initialPlayers)
 
   play.steps.slice(0, stepIndex + 1).forEach((step) => {

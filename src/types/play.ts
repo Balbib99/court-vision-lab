@@ -33,6 +33,10 @@ export type PlayStep = {
   duration?: number
   movements: Movement[]
   ball?: BallState
+  playerPositions?: Record<string, Position>
+  ballOwnerId?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export type Play = {

@@ -13,6 +13,14 @@ type CustomPlayInput = {
   ballCarrierId?: string
 }
 
+type StepSnapshotInput = {
+  ballCarrierId?: string
+  description?: string
+  players: Player[]
+  positions: Record<string, Position>
+  title: string
+}
+
 const slugify = (value: string) =>
   value
     .trim()
@@ -56,8 +64,38 @@ export const createCustomSetupStep = (ballCarrierId?: string): PlayStep => ({
   description: 'Saved board arrangement. Use Edit Mode to continue adjusting player spacing and ball assignment.',
   duration: 900,
   ball: ballCarrierId ? { carrierId: ballCarrierId } : undefined,
+  ballOwnerId: ballCarrierId,
   movements: [],
 })
+
+export const createStepSnapshot = ({
+  ballCarrierId,
+  description,
+  players,
+  positions,
+  title,
+}: StepSnapshotInput): PlayStep => {
+  const now = new Date().toISOString()
+  const playerIds = new Set(players.map((player) => player.id))
+  const playerPositions = players.reduce<Record<string, Position>>((snapshot, player) => {
+    snapshot[player.id] = clampPosition(positions[player.id] ?? player.position)
+    return snapshot
+  }, {})
+  const validBallCarrierId = ballCarrierId && playerIds.has(ballCarrierId) ? ballCarrierId : undefined
+
+  return {
+    id: `step-${slugify(title)}-${Date.now().toString(36)}`,
+    title: title.trim() || 'New step',
+    description: description?.trim() || 'Saved custom play step.',
+    duration: 1000,
+    ball: validBallCarrierId ? { carrierId: validBallCarrierId } : undefined,
+    ballOwnerId: validBallCarrierId,
+    movements: [],
+    playerPositions,
+    createdAt: now,
+    updatedAt: now,
+  }
+}
 
 export const createCustomPlayFromBoard = ({
   basePlay,
@@ -90,7 +128,15 @@ export const createCustomPlayFromBoard = ({
     objective: basePlay.objective,
     concepts: ['Custom', ...basePlay.concepts.filter((concept) => concept !== 'Custom').slice(0, 4)],
     initialPlayers,
-    steps: [createCustomSetupStep(normalizedState.ballCarrierId)],
+    steps: [
+      createStepSnapshot({
+        players: initialPlayers,
+        positions: normalizedState.positions,
+        ballCarrierId: normalizedState.ballCarrierId,
+        title: 'Custom setup',
+        description: 'Initial saved board arrangement.',
+      }),
+    ],
     basePlayId: basePlay.id,
     userDescription: description?.trim() || undefined,
   })
@@ -109,6 +155,10 @@ export const duplicatePlayAsCustom = (play: Play, name: string): Play =>
       ...step,
       movements: step.movements.map((movement) => ({ ...movement, to: { ...movement.to } })),
       ball: step.ball ? { ...step.ball, position: step.ball.position ? { ...step.ball.position } : undefined } : undefined,
+      ballOwnerId: step.ballOwnerId,
+      playerPositions: step.playerPositions
+        ? Object.fromEntries(Object.entries(step.playerPositions).map(([playerId, position]) => [playerId, { ...position }]))
+        : undefined,
     })),
   })
 
@@ -171,8 +221,22 @@ export const normalizeCustomPlay = (value: unknown): Play | undefined => {
       : []
     const ballCarrierId = isRecord(step.ball) && typeof step.ball.carrierId === 'string' && playerIds.has(step.ball.carrierId)
       ? step.ball.carrierId
+      : typeof step.ballOwnerId === 'string' && playerIds.has(step.ballOwnerId)
+        ? step.ballOwnerId
       : undefined
     const ballPosition = isRecord(step.ball) ? normalizePosition(step.ball.position) : undefined
+    const playerPositions = isRecord(step.playerPositions)
+      ? Object.entries(step.playerPositions).reduce<Record<string, Position>>((positions, [playerId, position]) => {
+        if (playerIds.has(playerId)) {
+          const normalizedPosition = normalizePosition(position)
+          if (normalizedPosition) {
+            positions[playerId] = normalizedPosition
+          }
+        }
+
+        return positions
+      }, {})
+      : undefined
 
     return [{
       id: typeof step.id === 'string' ? step.id : `custom-step-${index + 1}`,
@@ -180,7 +244,11 @@ export const normalizeCustomPlay = (value: unknown): Play | undefined => {
       description: typeof step.description === 'string' ? step.description : 'Saved custom play step.',
       duration: typeof step.duration === 'number' ? step.duration : 900,
       ball: ballCarrierId || ballPosition ? { carrierId: ballCarrierId, position: ballPosition } : undefined,
+      ballOwnerId: ballCarrierId,
       movements,
+      playerPositions: playerPositions && Object.keys(playerPositions).length > 0 ? playerPositions : undefined,
+      createdAt: typeof step.createdAt === 'string' ? step.createdAt : undefined,
+      updatedAt: typeof step.updatedAt === 'string' ? step.updatedAt : undefined,
     }]
   })
 

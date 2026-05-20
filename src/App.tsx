@@ -9,14 +9,14 @@ import { useCustomPlays } from './hooks/useCustomPlays'
 import { useCourtEditor } from './hooks/useCourtEditor'
 import { usePlayAnimation } from './hooks/usePlayAnimation'
 import { useTheme } from './hooks/useTheme'
-import { createCustomPlayFromBoard, duplicatePlayAsCustom, isCustomPlay } from './utils/customPlays'
+import { createCustomPlayFromBoard, createStepSnapshot, duplicatePlayAsCustom, isCustomPlay } from './utils/customPlays'
 import { createBoardState } from './utils/boardState'
 import { getBallHandler, getInitialPositions } from './utils/positions'
 import { loadBoardState, saveBoardState } from './utils/storage'
 
 function App() {
   const { theme, toggleTheme } = useTheme()
-  const { addCustomPlay, customPlays, deleteCustomPlay } = useCustomPlays()
+  const { addCustomPlay, customPlays, deleteCustomPlay, updateCustomPlay } = useCustomPlays()
   const allPlays = useMemo(() => [...plays, ...customPlays], [customPlays])
   const [initialBoardState] = useState(() => loadBoardState([...plays, ...customPlays]))
   const [selectedPlayId, setSelectedPlayId] = useState(initialBoardState?.selectedPlayId ?? defaultPlay.id)
@@ -45,6 +45,7 @@ function App() {
     usePlayAnimation(selectedPlay, initialBoardState?.currentStepIndex)
   const {
     addPlayer,
+    applyStepSnapshot,
     assignBallToSelected,
     ballCarrierId,
     canAddDefense,
@@ -68,6 +69,8 @@ function App() {
   const courtPositions = isEditMode ? editedPositions : positions
   const courtBallPosition = isEditMode ? editedBallPosition : ballPosition
   const selectedPlayIsCustom = isCustomPlay(selectedPlay)
+  const currentEditorPlayers = isEditMode ? editedPlayers : selectedPlay.initialPlayers
+  const currentBallCarrierId = isEditMode ? ballCarrierId : activeStep?.ballOwnerId ?? activeStep?.ball?.carrierId ?? getBallHandler(selectedPlay)?.id
 
   const showSaveFeedback = useCallback((status: Exclude<BoardSaveStatus, 'idle'>) => {
     if (saveStatusTimerRef.current) {
@@ -101,13 +104,13 @@ function App() {
       currentStepIndex: 0,
       players: play.initialPlayers,
       positions: defaultPositions,
-      ballCarrierId: getBallHandler(play).id,
+      ballCarrierId: getBallHandler(play)?.id,
       isCustom: false,
     })
   }, [selectedPlay])
 
   const createCurrentBoardState = useCallback(() => {
-    const playBallCarrierId = activeStep?.ball?.carrierId ?? getBallHandler(selectedPlay).id
+    const playBallCarrierId = activeStep?.ballOwnerId ?? activeStep?.ball?.carrierId ?? getBallHandler(selectedPlay)?.id
 
     return createBoardState({
       selectedPlayId: selectedPlay.id,
@@ -118,6 +121,7 @@ function App() {
       isCustom: isBoardCustom,
     })
   }, [
+    activeStep?.ballOwnerId,
     activeStep?.ball?.carrierId,
     activeStepIndex,
     ballCarrierId,
@@ -162,6 +166,175 @@ function App() {
     saveBoardState(createDefaultStateForPlay(nextPlay))
   }
 
+  const applyCustomStepToEditor = useCallback(
+    (play: typeof selectedPlay, stepIndex: number) => {
+      const step = play.steps[stepIndex]
+      applyStepSnapshot(
+        play.initialPlayers,
+        step?.playerPositions ?? getInitialPositions(play.initialPlayers),
+        step?.ballOwnerId ?? step?.ball?.carrierId,
+      )
+    },
+    [applyStepSnapshot],
+  )
+
+  const handleStepSelect = (stepIndex: number) => {
+    goToStep(stepIndex)
+    if (selectedPlayIsCustom) {
+      applyCustomStepToEditor(selectedPlay, stepIndex)
+    }
+  }
+
+  const handlePreviousStep = () => {
+    if (selectedPlayIsCustom && isEditMode) {
+      const stepIndex = Math.max(activeStepIndex - 1, 0)
+      goToStep(stepIndex)
+      applyCustomStepToEditor(selectedPlay, stepIndex)
+      return
+    }
+
+    previousStep()
+  }
+
+  const handleNextStep = () => {
+    if (selectedPlayIsCustom && isEditMode) {
+      const stepIndex = Math.min(activeStepIndex + 1, selectedPlay.steps.length - 1)
+      goToStep(stepIndex)
+      applyCustomStepToEditor(selectedPlay, stepIndex)
+      return
+    }
+
+    nextStep()
+  }
+
+  const persistUpdatedCustomPlay = (nextPlay: typeof selectedPlay, stepIndex = activeStepIndex) => {
+    const updatedPlay = updateCustomPlay(nextPlay)
+    setSelectedPlayId(updatedPlay.id)
+    goToStep(Math.min(stepIndex, updatedPlay.steps.length - 1))
+    saveBoardState(createBoardState({
+      selectedPlayId: updatedPlay.id,
+      currentStepIndex: Math.min(stepIndex, updatedPlay.steps.length - 1),
+      players: currentEditorPlayers,
+      positions: courtPositions,
+      ballCarrierId: currentBallCarrierId,
+      isCustom: true,
+    }))
+    return updatedPlay
+  }
+
+  const handleAddStep = () => {
+    if (!selectedPlayIsCustom) {
+      showPlaybookMessage('Duplicate this play to edit its timeline')
+      return
+    }
+
+    const title = window.prompt('Step title', 'New step')
+    if (title === null) {
+      return
+    }
+
+    const description = window.prompt('Step description optional') ?? undefined
+    const nextStep = createStepSnapshot({
+      players: currentEditorPlayers,
+      positions: courtPositions,
+      ballCarrierId: currentBallCarrierId,
+      title: title.trim() || 'New step',
+      description,
+    })
+    const nextPlay = {
+      ...selectedPlay,
+      initialPlayers: currentEditorPlayers,
+      steps: [...selectedPlay.steps, nextStep],
+    }
+    persistUpdatedCustomPlay(nextPlay, nextPlay.steps.length - 1)
+    showPlaybookMessage('Step added')
+  }
+
+  const handleUpdateStep = () => {
+    if (!selectedPlayIsCustom || !activeStep) {
+      return
+    }
+
+    const nextStep = {
+      ...createStepSnapshot({
+        players: currentEditorPlayers,
+        positions: courtPositions,
+        ballCarrierId: currentBallCarrierId,
+        title: activeStep.title,
+        description: activeStep.description,
+      }),
+      id: activeStep.id,
+      createdAt: activeStep.createdAt,
+      updatedAt: new Date().toISOString(),
+    }
+    const nextPlay = {
+      ...selectedPlay,
+      initialPlayers: currentEditorPlayers,
+      steps: selectedPlay.steps.map((step, index) => (index === activeStepIndex ? nextStep : step)),
+    }
+    persistUpdatedCustomPlay(nextPlay)
+    showPlaybookMessage('Step updated')
+  }
+
+  const handleDeleteStep = () => {
+    if (!selectedPlayIsCustom || selectedPlay.steps.length <= 1) {
+      return
+    }
+
+    const confirmed = window.confirm('Delete this step?')
+    if (!confirmed) {
+      return
+    }
+
+    const nextSteps = selectedPlay.steps.filter((_, index) => index !== activeStepIndex)
+    const nextStepIndex = Math.max(0, Math.min(activeStepIndex, nextSteps.length - 1))
+    const nextPlay = { ...selectedPlay, steps: nextSteps }
+    persistUpdatedCustomPlay(nextPlay, nextStepIndex)
+    applyCustomStepToEditor(nextPlay, nextStepIndex)
+    showPlaybookMessage('Step deleted')
+  }
+
+  const handleRenameStep = () => {
+    if (!selectedPlayIsCustom || !activeStep) {
+      return
+    }
+
+    const title = window.prompt('Rename step', activeStep.title)
+    if (title === null) {
+      return
+    }
+
+    const nextTitle = title.trim() || 'New step'
+    const nextPlay = {
+      ...selectedPlay,
+      steps: selectedPlay.steps.map((step, index) => (
+        index === activeStepIndex ? { ...step, title: nextTitle, updatedAt: new Date().toISOString() } : step
+      )),
+    }
+    persistUpdatedCustomPlay(nextPlay)
+    showPlaybookMessage('Step renamed')
+  }
+
+  const handleEditStepDescription = () => {
+    if (!selectedPlayIsCustom || !activeStep) {
+      return
+    }
+
+    const description = window.prompt('Step description', activeStep.description)
+    if (description === null) {
+      return
+    }
+
+    const nextPlay = {
+      ...selectedPlay,
+      steps: selectedPlay.steps.map((step, index) => (
+        index === activeStepIndex ? { ...step, description: description.trim() || 'Saved custom play step.', updatedAt: new Date().toISOString() } : step
+      )),
+    }
+    persistUpdatedCustomPlay(nextPlay)
+    showPlaybookMessage('Step description updated')
+  }
+
   const handleSaveAsCustomPlay = () => {
     const name = window.prompt('Name this custom play')
     if (!name) {
@@ -181,7 +354,7 @@ function App() {
       description,
       players: isEditMode ? editedPlayers : selectedPlay.initialPlayers,
       positions: courtPositions,
-      ballCarrierId: isEditMode ? ballCarrierId : activeStep?.ball?.carrierId ?? getBallHandler(selectedPlay).id,
+      ballCarrierId: isEditMode ? ballCarrierId : activeStep?.ballOwnerId ?? activeStep?.ball?.carrierId ?? getBallHandler(selectedPlay)?.id,
     })
 
     addCustomPlay(customPlay)
@@ -235,6 +408,12 @@ function App() {
 
   const handleReset = () => {
     if (isEditMode) {
+      if (selectedPlayIsCustom) {
+        reset()
+        applyCustomStepToEditor(selectedPlay, 0)
+        return
+      }
+
       resetEditedPositions()
       return
     }
@@ -289,6 +468,7 @@ function App() {
       canAddOffense={canAddOffense}
       canClearBoard={canClearBoard}
       canDeleteCustomPlay={selectedPlayIsCustom}
+      canEditTimeline={selectedPlayIsCustom}
       clearBoardLabel={clearBoardLabel}
       isPlaying={isPlaying}
       isEditMode={isEditMode}
@@ -298,15 +478,15 @@ function App() {
       onClearBoard={handleClearBoard}
       onDeleteCustomPlay={handleDeleteCustomPlay}
       onDuplicatePlay={handleDuplicatePlay}
-      onNextStep={nextStep}
+      onNextStep={handleNextStep}
       onPlayFullSequence={playFullSequence}
-      onPreviousStep={previousStep}
+      onPreviousStep={handlePreviousStep}
       onReset={handleReset}
       onRemoveSelectedPlayer={removeSelectedPlayer}
       onResetToPlayDefaults={handleResetToPlayDefaults}
       onSaveAsCustomPlay={handleSaveAsCustomPlay}
       onSaveBoard={handleSaveBoard}
-      onStepSelect={goToStep}
+      onStepSelect={handleStepSelect}
       onToggleEditMode={toggleEditMode}
       onToggleTheme={toggleTheme}
       playbookMessage={playbookMessage}
@@ -338,9 +518,15 @@ function App() {
           activeStep={activeStep}
           activeStepIndex={activeStepIndex}
           ballCarrierId={ballCarrierId}
+          canEditTimeline={selectedPlayIsCustom}
           isEditMode={isEditMode}
+          onAddStep={handleAddStep}
           onAssignBall={assignBallToSelected}
+          onDeleteStep={handleDeleteStep}
+          onEditStepDescription={handleEditStepDescription}
+          onRenameStep={handleRenameStep}
           onSelectPlay={handleSelectPlay}
+          onUpdateStep={handleUpdateStep}
           play={selectedPlay}
           plays={allPlays}
           selectedPlayer={selectedPlayer}

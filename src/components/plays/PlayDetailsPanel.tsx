@@ -10,7 +10,13 @@ type PlayDetailsPanelProps = {
   isEditMode: boolean
   selectedPlayer?: Player
   ballCarrierId?: string
+  canEditTimeline?: boolean
   onAssignBall: () => void
+  onAddStep?: () => void
+  onDeleteStep?: () => void
+  onEditStepDescription?: () => void
+  onRenameStep?: () => void
+  onUpdateStep?: () => void
 }
 
 export function PlayDetailsPanel({
@@ -22,7 +28,13 @@ export function PlayDetailsPanel({
   isEditMode,
   selectedPlayer,
   ballCarrierId,
+  canEditTimeline = false,
   onAssignBall,
+  onAddStep,
+  onDeleteStep,
+  onEditStepDescription,
+  onRenameStep,
+  onUpdateStep,
 }: PlayDetailsPanelProps) {
   const selectedPlayerHasBall = Boolean(selectedPlayer && selectedPlayer.id === ballCarrierId)
 
@@ -89,6 +101,45 @@ export function PlayDetailsPanel({
             <p className="current-read-description text-muted mt-1 text-sm leading-6">{activeStep?.description}</p>
           </>
         )}
+      </div>
+
+      <div className="timeline-editor tactical-border mt-5 border-t pt-5">
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-soft font-mono text-[11px] uppercase tracking-[0.16em]">Step Editor</h3>
+          {!canEditTimeline && (
+            <span className="text-soft font-mono text-[10px] uppercase tracking-[0.12em]">Duplicate to edit</span>
+          )}
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          {[
+            { label: '+ Step', action: onAddStep, title: canEditTimeline ? 'Add step from current board' : 'Available for custom plays' },
+            { label: 'Update', action: onUpdateStep, title: canEditTimeline ? 'Update current step' : 'Available for custom plays' },
+            { label: 'Rename', action: onRenameStep, title: canEditTimeline ? 'Rename current step' : 'Available for custom plays' },
+            { label: 'Describe', action: onEditStepDescription, title: canEditTimeline ? 'Edit step description' : 'Available for custom plays' },
+          ].map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              onClick={item.action}
+              disabled={!canEditTimeline}
+              className="panel rounded-md border px-3 py-2 text-xs font-bold text-[var(--text-main)] transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label={item.title}
+              title={item.title}
+            >
+              {item.label}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={onDeleteStep}
+            disabled={!canEditTimeline || play.steps.length <= 1}
+            className="panel col-span-2 rounded-md border px-3 py-2 text-xs font-bold text-[var(--defense)] transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-40"
+            aria-label={canEditTimeline ? 'Delete current step' : 'Available for custom plays'}
+            title={play.steps.length <= 1 ? 'A custom play needs at least one step' : canEditTimeline ? 'Delete current step' : 'Available for custom plays'}
+          >
+            Delete Step
+          </button>
+        </div>
       </div>
 
       <ol className="play-steps tactical-border mt-5 grid gap-2 border-t pt-5">

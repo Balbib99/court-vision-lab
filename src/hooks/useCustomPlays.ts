@@ -26,6 +26,20 @@ export function useCustomPlays() {
     [customPlays, persistCustomPlays],
   )
 
+  const updateCustomPlay = useCallback(
+    (play: Play) => {
+      const updatedPlay = {
+        ...play,
+        source: 'custom' as const,
+        isCustom: true,
+        updatedAt: new Date().toISOString(),
+      }
+      persistCustomPlays(customPlays.map((item) => (item.id === updatedPlay.id ? updatedPlay : item)))
+      return updatedPlay
+    },
+    [customPlays, persistCustomPlays],
+  )
+
   const customPlayIds = useMemo(
     () => new Set(customPlays.filter(isCustomPlay).map((play) => play.id)),
     [customPlays],
@@ -36,5 +50,6 @@ export function useCustomPlays() {
     customPlayIds,
     customPlays,
     deleteCustomPlay,
+    updateCustomPlay,
   }
 }

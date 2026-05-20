@@ -4,6 +4,7 @@ import type { PlayStep } from '../../types/play'
 type BottomControlsProps = {
   activeStep?: PlayStep
   activeStepIndex: number
+  canNavigateInEditMode?: boolean
   isEditMode: boolean
   isFirstStep: boolean
   isLastStep: boolean
@@ -20,6 +21,7 @@ type BottomControlsProps = {
 export function BottomControls({
   activeStep,
   activeStepIndex,
+  canNavigateInEditMode = false,
   isEditMode,
   isFirstStep,
   isLastStep,
@@ -32,6 +34,8 @@ export function BottomControls({
   steps,
   stepCount,
 }: BottomControlsProps) {
+  const timelineDisabled = isEditMode && !canNavigateInEditMode
+
   return (
     <div className="bottom-controls panel-floating z-30 mx-auto flex w-full max-w-4xl flex-col gap-3 rounded-2xl border px-4 py-3 sm:rounded-3xl sm:px-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -49,7 +53,7 @@ export function BottomControls({
           <button
             type="button"
             onClick={onPreviousStep}
-            disabled={isEditMode || isFirstStep}
+            disabled={timelineDisabled || isFirstStep}
             className="control-button text-muted tactical-border flex h-10 w-10 items-center justify-center rounded-full border transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-35"
             aria-label="Previous step"
             title="Previous step"
@@ -59,7 +63,7 @@ export function BottomControls({
           <button
             type="button"
             onClick={onNextStep}
-            disabled={isEditMode || isLastStep}
+            disabled={timelineDisabled || isLastStep}
             className="control-button text-muted tactical-border flex h-10 w-10 items-center justify-center rounded-full border transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-35"
             aria-label="Next step"
             title="Next step"
@@ -77,9 +81,9 @@ export function BottomControls({
           </button>
           <div className="step-copy min-w-0">
             <p className="step-label text-soft font-mono text-[11px] uppercase tracking-[0.12em]">
-              {isEditMode ? 'Edit Mode' : `Step ${activeStepIndex + 1}/${stepCount}`}
+              {isEditMode ? `Edit Step ${activeStepIndex + 1}/${stepCount}` : `Step ${activeStepIndex + 1}/${stepCount}`}
             </p>
-            <p className="step-title text-main truncate text-sm font-bold">{isEditMode ? 'Drag players on court' : activeStep?.title ?? 'Ready'}</p>
+            <p className="step-title text-main truncate text-sm font-bold">{isEditMode ? activeStep?.title ?? 'Drag players on court' : activeStep?.title ?? 'Ready'}</p>
           </div>
         </div>
         <div className="bottom-controls-meta text-muted flex items-center justify-between gap-6 font-mono text-xs sm:justify-end">
@@ -102,7 +106,7 @@ export function BottomControls({
               key={step.id}
               type="button"
               onClick={() => onStepSelect(index)}
-              disabled={isEditMode}
+              disabled={timelineDisabled}
               className={[
                 'timeline-step min-w-[126px] flex-1 rounded-md border px-3 py-2 text-left transition disabled:cursor-not-allowed disabled:opacity-50',
                 isActive

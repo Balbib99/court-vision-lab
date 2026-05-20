@@ -89,11 +89,12 @@ export const usePlayAnimation = (play: Play, initialStepIndex = 0) => {
 
   const activeStep = play.steps[currentStepIndex]
   const ballHandler = getBallHandler(play)
+  const activeBallCarrierId = activeStep?.ballOwnerId ?? activeStep?.ball?.carrierId
 
   const ballPosition: Position = resolveBallPosition(
     positions,
-    activeStep?.ball?.carrierId,
-    activeStep?.ball?.position ?? positions[ballHandler.id] ?? ballHandler.position,
+    activeBallCarrierId,
+    activeStep?.ball?.position ?? (ballHandler ? positions[ballHandler.id] ?? ballHandler.position : undefined),
   )
 
   return {

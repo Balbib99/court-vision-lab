@@ -13,7 +13,7 @@ export function useCourtEditor(
   const [editedPlayers, setEditedPlayers] = useState<Player[]>(initialBoardState?.players ?? play.initialPlayers)
   const [editedPositions, setEditedPositions] = useState(() => initialBoardState?.positions ?? getInitialPositions(play.initialPlayers))
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | undefined>()
-  const [ballCarrierId, setBallCarrierId] = useState<string | undefined>(() => initialBoardState?.ballCarrierId ?? getBallHandler(play).id)
+  const [ballCarrierId, setBallCarrierId] = useState<string | undefined>(() => initialBoardState?.ballCarrierId ?? getBallHandler(play)?.id)
   const [isBoardCustom, setIsBoardCustom] = useState(Boolean(initialBoardState?.isCustom))
 
   const toggleEditMode = useCallback(() => {
@@ -51,7 +51,7 @@ export function useCourtEditor(
     setEditedPlayers(play.initialPlayers)
     setEditedPositions(getInitialPositions(play.initialPlayers))
     setSelectedPlayerId(undefined)
-    setBallCarrierId(getBallHandler(play).id)
+    setBallCarrierId(getBallHandler(play)?.id)
     setIsBoardCustom(false)
   }, [play])
 
@@ -60,7 +60,7 @@ export function useCourtEditor(
     setEditedPlayers(nextPlay.initialPlayers)
     setEditedPositions(getInitialPositions(nextPlay.initialPlayers))
     setSelectedPlayerId(undefined)
-    setBallCarrierId(getBallHandler(nextPlay).id)
+    setBallCarrierId(getBallHandler(nextPlay)?.id)
     setIsBoardCustom(false)
   }, [])
 
@@ -77,7 +77,7 @@ export function useCourtEditor(
     setEditedPlayers(play.initialPlayers)
     setEditedPositions(getInitialPositions(play.initialPlayers))
     setSelectedPlayerId(undefined)
-    setBallCarrierId(getBallHandler(play).id)
+    setBallCarrierId(getBallHandler(play)?.id)
     setIsBoardCustom(false)
   }, [play])
 
@@ -90,6 +90,13 @@ export function useCourtEditor(
     setBallCarrierId(undefined)
     setIsBoardCustom(true)
   }, [onEnterEditMode])
+
+  const applyStepSnapshot = useCallback((players: Player[], positions: Record<string, Position>, nextBallCarrierId?: string) => {
+    setEditedPlayers(players)
+    setEditedPositions(positions)
+    setSelectedPlayerId(undefined)
+    setBallCarrierId(nextBallCarrierId)
+  }, [])
 
   const addPlayer = useCallback(
     (team: Team) => {
@@ -141,12 +148,13 @@ export function useCourtEditor(
     ? resolveBallPosition(
       editedPositions,
       ballCarrierId,
-      getBallHandler(play).position,
+      getBallHandler(play)?.position,
     )
     : undefined
 
   return {
     addPlayer,
+    applyStepSnapshot,
     assignBallToSelected,
     ballCarrierId,
     canAddDefense: isEditMode && canAddPlayer(editedPlayers, 'defense'),

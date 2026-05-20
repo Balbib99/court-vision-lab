@@ -15,6 +15,7 @@ type AppShellProps = {
   canAddOffense: boolean
   canClearBoard: boolean
   canDeleteCustomPlay: boolean
+  canEditTimeline: boolean
   clearBoardLabel: string
   children: ReactNode
   isPlaying: boolean
@@ -52,6 +53,7 @@ export function AppShell({
   canAddOffense,
   canClearBoard,
   canDeleteCustomPlay,
+  canEditTimeline,
   clearBoardLabel,
   children,
   isPlaying,
@@ -106,6 +108,7 @@ export function AppShell({
               <BottomControls
                 activeStep={activeStep}
                 activeStepIndex={activeStepIndex}
+                canNavigateInEditMode={canEditTimeline}
                 isEditMode={isEditMode}
                 isFirstStep={activeStepIndex === 0}
                 isLastStep={activeStepIndex === activePlay.steps.length - 1}
