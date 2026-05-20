@@ -7,23 +7,28 @@ const mainTools = [
   { label: 'Erase coming soon', icon: Eraser, active: false },
 ]
 
-const creationTools = [
-  { label: 'Add offensive player - coming soon', text: '+O' },
-  { label: 'Add defensive player - coming soon', text: '+D' },
-]
-
 type RightToolbarProps = {
   ballCarrierId?: string
+  canAddDefense: boolean
+  canAddOffense: boolean
   isEditMode: boolean
+  onAddDefense: () => void
+  onAddOffense: () => void
   onAssignBall: () => void
+  onRemoveSelectedPlayer: () => void
   onToggleEditMode: () => void
   selectedPlayer?: Player
 }
 
 export function RightToolbar({
   ballCarrierId,
+  canAddDefense,
+  canAddOffense,
   isEditMode,
+  onAddDefense,
+  onAddOffense,
   onAssignBall,
+  onRemoveSelectedPlayer,
   onToggleEditMode,
   selectedPlayer,
 }: RightToolbarProps) {
@@ -34,6 +39,34 @@ export function RightToolbar({
       ? 'Selected player has ball'
       : 'Assign ball to selected player'
   const ballButtonDisabled = !isEditMode || !selectedPlayer || selectedPlayerHasBall
+  const deleteLabel = !isEditMode
+    ? 'Available in Edit Mode'
+    : selectedPlayer
+      ? 'Remove selected player'
+      : 'Select a player first'
+  const deleteDisabled = !isEditMode || !selectedPlayer
+  const creationTools = [
+    {
+      disabled: !isEditMode || !canAddOffense,
+      label: !isEditMode
+        ? 'Available in Edit Mode'
+        : canAddOffense
+          ? 'Add offensive player'
+          : 'Maximum 5 offensive players reached',
+      onClick: onAddOffense,
+      text: '+O',
+    },
+    {
+      disabled: !isEditMode || !canAddDefense,
+      label: !isEditMode
+        ? 'Available in Edit Mode'
+        : canAddDefense
+          ? 'Add defensive player'
+          : 'Maximum 5 defensive players reached',
+      onClick: onAddDefense,
+      text: '+D',
+    },
+  ]
   const toolbarButtonClass =
     'toolbar-button flex h-12 w-12 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-40'
 
@@ -73,10 +106,14 @@ export function RightToolbar({
 
         <button
           type="button"
-          disabled
-          className={[toolbarButtonClass, 'text-[var(--defense)] opacity-75'].join(' ')}
-          aria-label="Delete coming soon"
-          title="Delete coming soon"
+          onClick={onRemoveSelectedPlayer}
+          disabled={deleteDisabled}
+          className={[
+            toolbarButtonClass,
+            deleteDisabled ? 'text-[var(--defense)] opacity-50' : 'text-[var(--defense)] hover:bg-[var(--accent-muted)]',
+          ].join(' ')}
+          aria-label={deleteLabel}
+          title={deleteLabel}
         >
           <Trash2 size={21} aria-hidden="true" />
         </button>
@@ -85,9 +122,10 @@ export function RightToolbar({
 
         {creationTools.map((tool) => (
           <button
-            key={tool.label}
+            key={tool.text}
             type="button"
-            disabled
+            onClick={tool.onClick}
+            disabled={tool.disabled}
             className={[toolbarButtonClass, 'panel border-2 font-mono text-xs font-black text-[var(--text-main)]'].join(' ')}
             aria-label={tool.label}
             title={tool.label}

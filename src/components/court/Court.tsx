@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import type { PointerEvent } from 'react'
-import type { Play, PlayStep, Position } from '../../types/play'
+import type { Play, Player, PlayStep, Position } from '../../types/play'
 import { fromClientPoint, getInitialPositions, getStepPositions } from '../../utils/positions'
 import { BallMarker } from './BallMarker'
 import { CourtGrid } from './CourtGrid'
@@ -18,6 +18,7 @@ type CourtProps = {
   isEditMode?: boolean
   onMovePlayer?: (playerId: string, position: Position) => void
   onSelectPlayer?: (playerId: string) => void
+  players?: Player[]
   selectedPlayerId?: string
 }
 
@@ -31,6 +32,7 @@ export function Court({
   isEditMode = false,
   onMovePlayer,
   onSelectPlayer,
+  players,
   selectedPlayerId,
 }: CourtProps) {
   const boardRef = useRef<HTMLDivElement>(null)
@@ -38,6 +40,7 @@ export function Court({
   const pathStartPositions =
     activeStepIndex > 0 ? getStepPositions(play, activeStepIndex - 1) : getInitialPositions(play.initialPlayers)
   const carrierId = ballCarrierId ?? activeStep?.ball?.carrierId ?? play.initialPlayers.find((player) => player.hasBall)?.id
+  const visiblePlayers = players ?? play.initialPlayers
 
   const moveDraggedPlayer = (event: PointerEvent<HTMLDivElement>) => {
     if (!isEditMode || !draggingPlayerId || !boardRef.current) {
@@ -67,7 +70,7 @@ export function Court({
         <div className="absolute inset-0 border border-[color:var(--border-strong)]" />
         <CourtLines />
         {!isEditMode && <MovementPath fromPositions={pathStartPositions} step={activeStep} />}
-        {play.initialPlayers.map((player) => (
+        {visiblePlayers.map((player) => (
           <PlayerMarker
             key={player.id}
             player={player}

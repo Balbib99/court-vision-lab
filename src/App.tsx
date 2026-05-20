@@ -30,13 +30,18 @@ function App() {
   } =
     usePlayAnimation(selectedPlay)
   const {
+    addPlayer,
     assignBallToSelected,
     ballCarrierId,
+    canAddDefense,
+    canAddOffense,
     editedBallPosition,
+    editedPlayers,
     editedPositions,
     isEditMode,
     resetEditedPositions,
     resetForPlay,
+    removeSelectedPlayer,
     selectedPlayer,
     selectedPlayerId,
     selectPlayer,
@@ -68,13 +73,18 @@ function App() {
       activeStep={activeStep}
       activeStepIndex={activeStepIndex}
       ballCarrierId={ballCarrierId}
+      canAddDefense={canAddDefense}
+      canAddOffense={canAddOffense}
       isPlaying={isPlaying}
       isEditMode={isEditMode}
+      onAddDefense={() => addPlayer('defense')}
+      onAddOffense={() => addPlayer('offense')}
       onAssignBall={assignBallToSelected}
       onNextStep={nextStep}
       onPlayFullSequence={playFullSequence}
       onPreviousStep={previousStep}
       onReset={handleReset}
+      onRemoveSelectedPlayer={removeSelectedPlayer}
       onStepSelect={goToStep}
       onToggleEditMode={toggleEditMode}
       onToggleTheme={toggleTheme}
@@ -98,6 +108,7 @@ function App() {
           isEditMode={isEditMode}
           onMovePlayer={updatePlayerPosition}
           onSelectPlayer={selectPlayer}
+          players={isEditMode ? editedPlayers : undefined}
           selectedPlayerId={selectedPlayerId}
         />
         <PlayDetailsPanel

@@ -11,10 +11,15 @@ type AppShellProps = {
   activeStep?: PlayStep
   activeStepIndex: number
   ballCarrierId?: string
+  canAddDefense: boolean
+  canAddOffense: boolean
   children: ReactNode
   isPlaying: boolean
   isEditMode: boolean
+  onAddDefense: () => void
+  onAddOffense: () => void
   onAssignBall: () => void
+  onRemoveSelectedPlayer: () => void
   onToggleTheme: () => void
   onToggleEditMode: () => void
   onNextStep: () => void
@@ -32,10 +37,15 @@ export function AppShell({
   activeStep,
   activeStepIndex,
   ballCarrierId,
+  canAddDefense,
+  canAddOffense,
   children,
   isPlaying,
   isEditMode,
+  onAddDefense,
+  onAddOffense,
   onAssignBall,
+  onRemoveSelectedPlayer,
   onNextStep,
   onPlayFullSequence,
   onPreviousStep,
@@ -75,8 +85,13 @@ export function AppShell({
           </div>
           <RightToolbar
             ballCarrierId={ballCarrierId}
+            canAddDefense={canAddDefense}
+            canAddOffense={canAddOffense}
             isEditMode={isEditMode}
+            onAddDefense={onAddDefense}
+            onAddOffense={onAddOffense}
             onAssignBall={onAssignBall}
+            onRemoveSelectedPlayer={onRemoveSelectedPlayer}
             onToggleEditMode={onToggleEditMode}
             selectedPlayer={selectedPlayer}
           />
