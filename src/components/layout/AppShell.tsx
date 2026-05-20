@@ -13,13 +13,17 @@ type AppShellProps = {
   ballCarrierId?: string
   canAddDefense: boolean
   canAddOffense: boolean
+  canClearBoard: boolean
   children: ReactNode
   isPlaying: boolean
   isEditMode: boolean
   onAddDefense: () => void
   onAddOffense: () => void
   onAssignBall: () => void
+  onClearBoard: () => void
   onRemoveSelectedPlayer: () => void
+  onResetToPlayDefaults: () => void
+  onSaveBoard: () => void
   onToggleTheme: () => void
   onToggleEditMode: () => void
   onNextStep: () => void
@@ -29,6 +33,7 @@ type AppShellProps = {
   onStepSelect: (stepIndex: number) => void
   stepCount: number
   theme: Theme
+  saveStatus?: 'idle' | 'saved'
   selectedPlayer?: Player
 }
 
@@ -39,19 +44,24 @@ export function AppShell({
   ballCarrierId,
   canAddDefense,
   canAddOffense,
+  canClearBoard,
   children,
   isPlaying,
   isEditMode,
   onAddDefense,
   onAddOffense,
   onAssignBall,
+  onClearBoard,
   onRemoveSelectedPlayer,
+  onResetToPlayDefaults,
+  onSaveBoard,
   onNextStep,
   onPlayFullSequence,
   onPreviousStep,
   onReset,
   onStepSelect,
   stepCount,
+  saveStatus,
   onToggleTheme,
   onToggleEditMode,
   theme,
@@ -59,7 +69,16 @@ export function AppShell({
 }: AppShellProps) {
   return (
     <div className="app-shell app-bg min-h-dvh xl:overflow-hidden">
-      <TopBar activePlay={activePlay} theme={theme} onToggleTheme={onToggleTheme} />
+      <TopBar
+        activePlay={activePlay}
+        canClearBoard={canClearBoard}
+        onClearBoard={onClearBoard}
+        onResetToPlayDefaults={onResetToPlayDefaults}
+        onSaveBoard={onSaveBoard}
+        saveStatus={saveStatus}
+        theme={theme}
+        onToggleTheme={onToggleTheme}
+      />
       <div className="app-body flex min-h-[calc(100dvh-80px)]">
         <Sidebar />
         <main className="app-main relative flex min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto xl:overflow-hidden">

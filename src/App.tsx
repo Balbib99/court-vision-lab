@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Court } from './components/court/Court'
 import { AppShell } from './components/layout/AppShell'
@@ -7,10 +7,16 @@ import { defaultPlay, plays } from './data/plays'
 import { useCourtEditor } from './hooks/useCourtEditor'
 import { usePlayAnimation } from './hooks/usePlayAnimation'
 import { useTheme } from './hooks/useTheme'
+import { createBoardState } from './utils/boardState'
+import { getBallHandler, getInitialPositions } from './utils/positions'
+import { loadBoardState, saveBoardState } from './utils/storage'
 
 function App() {
   const { theme, toggleTheme } = useTheme()
-  const [selectedPlayId, setSelectedPlayId] = useState(defaultPlay.id)
+  const [initialBoardState] = useState(() => loadBoardState(plays))
+  const [selectedPlayId, setSelectedPlayId] = useState(initialBoardState?.selectedPlayId ?? defaultPlay.id)
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle')
+  const saveStatusTimerRef = useRef<number | undefined>(undefined)
   const selectedPlay = useMemo(
     () => plays.find((play) => play.id === selectedPlayId) ?? defaultPlay,
     [selectedPlayId],
@@ -28,34 +34,103 @@ function App() {
     previousStep,
     reset,
   } =
-    usePlayAnimation(selectedPlay)
+    usePlayAnimation(selectedPlay, initialBoardState?.currentStepIndex)
   const {
     addPlayer,
     assignBallToSelected,
     ballCarrierId,
     canAddDefense,
     canAddOffense,
+    clearBoard,
     editedBallPosition,
     editedPlayers,
     editedPositions,
+    isBoardCustom,
     isEditMode,
     resetEditedPositions,
     resetForPlay,
+    resetToPlayDefaults,
     removeSelectedPlayer,
     selectedPlayer,
     selectedPlayerId,
     selectPlayer,
     toggleEditMode,
     updatePlayerPosition,
-  } = useCourtEditor(selectedPlay, pause)
+  } = useCourtEditor(selectedPlay, pause, initialBoardState)
   const courtPositions = isEditMode ? editedPositions : positions
   const courtBallPosition = isEditMode ? editedBallPosition : ballPosition
+
+  const showSavedFeedback = useCallback(() => {
+    if (saveStatusTimerRef.current) {
+      window.clearTimeout(saveStatusTimerRef.current)
+    }
+
+    setSaveStatus('saved')
+    saveStatusTimerRef.current = window.setTimeout(() => {
+      setSaveStatus('idle')
+      saveStatusTimerRef.current = undefined
+    }, 1300)
+  }, [])
+
+  const createDefaultStateForPlay = useCallback((play = selectedPlay) => {
+    const defaultPositions = getInitialPositions(play.initialPlayers)
+
+    return createBoardState({
+      selectedPlayId: play.id,
+      currentStepIndex: 0,
+      players: play.initialPlayers,
+      positions: defaultPositions,
+      ballCarrierId: getBallHandler(play).id,
+      isCustom: false,
+    })
+  }, [selectedPlay])
+
+  const createCurrentBoardState = useCallback(() => {
+    const playBallCarrierId = activeStep?.ball?.carrierId ?? getBallHandler(selectedPlay).id
+
+    return createBoardState({
+      selectedPlayId: selectedPlay.id,
+      currentStepIndex: activeStepIndex,
+      players: isEditMode ? editedPlayers : selectedPlay.initialPlayers,
+      positions: isEditMode ? editedPositions : positions,
+      ballCarrierId: isEditMode ? ballCarrierId : playBallCarrierId,
+      isCustom: isBoardCustom,
+    })
+  }, [
+    activeStep?.ball?.carrierId,
+    activeStepIndex,
+    ballCarrierId,
+    editedPlayers,
+    editedPositions,
+    isBoardCustom,
+    isEditMode,
+    positions,
+    selectedPlay,
+  ])
+
+  const handleSaveBoard = useCallback(() => {
+    saveBoardState(createCurrentBoardState())
+    showSavedFeedback()
+  }, [createCurrentBoardState, showSavedFeedback])
+
+  useEffect(() => {
+    if (!isEditMode) {
+      return
+    }
+
+    const autosaveTimer = window.setTimeout(() => {
+      saveBoardState(createCurrentBoardState())
+    }, 650)
+
+    return () => window.clearTimeout(autosaveTimer)
+  }, [createCurrentBoardState, isEditMode])
 
   const handleSelectPlay = (playId: string) => {
     const nextPlay = plays.find((play) => play.id === playId) ?? defaultPlay
     reset()
     resetForPlay(nextPlay)
     setSelectedPlayId(playId)
+    saveBoardState(createDefaultStateForPlay(nextPlay))
   }
 
   const handleReset = () => {
@@ -67,6 +142,36 @@ function App() {
     reset()
   }
 
+  const handleResetToPlayDefaults = () => {
+    reset()
+    resetToPlayDefaults()
+    saveBoardState(createDefaultStateForPlay())
+    showSavedFeedback()
+  }
+
+  const handleClearBoard = () => {
+    if (!isEditMode) {
+      return
+    }
+
+    const confirmed = window.confirm('Clear the current board? This will remove all players from the court.')
+    if (!confirmed) {
+      return
+    }
+
+    reset()
+    clearBoard()
+    saveBoardState(createBoardState({
+      selectedPlayId: selectedPlay.id,
+      currentStepIndex: 0,
+      players: [],
+      positions: {},
+      ballCarrierId: undefined,
+      isCustom: true,
+    }))
+    showSavedFeedback()
+  }
+
   return (
     <AppShell
       activePlay={selectedPlay}
@@ -75,19 +180,24 @@ function App() {
       ballCarrierId={ballCarrierId}
       canAddDefense={canAddDefense}
       canAddOffense={canAddOffense}
+      canClearBoard={isEditMode}
       isPlaying={isPlaying}
       isEditMode={isEditMode}
       onAddDefense={() => addPlayer('defense')}
       onAddOffense={() => addPlayer('offense')}
       onAssignBall={assignBallToSelected}
+      onClearBoard={handleClearBoard}
       onNextStep={nextStep}
       onPlayFullSequence={playFullSequence}
       onPreviousStep={previousStep}
       onReset={handleReset}
       onRemoveSelectedPlayer={removeSelectedPlayer}
+      onResetToPlayDefaults={handleResetToPlayDefaults}
+      onSaveBoard={handleSaveBoard}
       onStepSelect={goToStep}
       onToggleEditMode={toggleEditMode}
       onToggleTheme={toggleTheme}
+      saveStatus={saveStatus}
       selectedPlayer={selectedPlayer}
       stepCount={selectedPlay.steps.length}
       theme={theme}

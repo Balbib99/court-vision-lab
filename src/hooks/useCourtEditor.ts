@@ -1,14 +1,20 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { Play, Player, Position, Team } from '../types/play'
+import type { SavedBoardState } from '../utils/boardState'
 import { getBallHandler, getInitialPositions, resolveBallPosition } from '../utils/positions'
 import { canAddPlayer, createRosterPlayer } from '../utils/roster'
 
-export function useCourtEditor(play: Play, onEnterEditMode?: () => void) {
-  const [isEditMode, setIsEditMode] = useState(false)
-  const [editedPlayers, setEditedPlayers] = useState<Player[]>(play.initialPlayers)
-  const [editedPositions, setEditedPositions] = useState(() => getInitialPositions(play.initialPlayers))
+export function useCourtEditor(
+  play: Play,
+  onEnterEditMode?: () => void,
+  initialBoardState?: SavedBoardState,
+) {
+  const [isEditMode, setIsEditMode] = useState(Boolean(initialBoardState?.isCustom))
+  const [editedPlayers, setEditedPlayers] = useState<Player[]>(initialBoardState?.players ?? play.initialPlayers)
+  const [editedPositions, setEditedPositions] = useState(() => initialBoardState?.positions ?? getInitialPositions(play.initialPlayers))
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | undefined>()
-  const [ballCarrierId, setBallCarrierId] = useState<string | undefined>(() => getBallHandler(play).id)
+  const [ballCarrierId, setBallCarrierId] = useState<string | undefined>(() => initialBoardState?.ballCarrierId ?? getBallHandler(play).id)
+  const [isBoardCustom, setIsBoardCustom] = useState(Boolean(initialBoardState?.isCustom))
 
   const toggleEditMode = useCallback(() => {
     setIsEditMode((current) => {
@@ -21,6 +27,7 @@ export function useCourtEditor(play: Play, onEnterEditMode?: () => void) {
   }, [onEnterEditMode])
 
   const updatePlayerPosition = useCallback((playerId: string, position: Position) => {
+    setIsBoardCustom(true)
     setEditedPositions((currentPositions) => ({
       ...currentPositions,
       [playerId]: position,
@@ -37,6 +44,7 @@ export function useCourtEditor(play: Play, onEnterEditMode?: () => void) {
     }
 
     setBallCarrierId(selectedPlayerId)
+    setIsBoardCustom(true)
   }, [selectedPlayerId])
 
   const resetEditedPositions = useCallback(() => {
@@ -44,6 +52,7 @@ export function useCourtEditor(play: Play, onEnterEditMode?: () => void) {
     setEditedPositions(getInitialPositions(play.initialPlayers))
     setSelectedPlayerId(undefined)
     setBallCarrierId(getBallHandler(play).id)
+    setIsBoardCustom(false)
   }, [play])
 
   const resetForPlay = useCallback((nextPlay: Play) => {
@@ -52,7 +61,35 @@ export function useCourtEditor(play: Play, onEnterEditMode?: () => void) {
     setEditedPositions(getInitialPositions(nextPlay.initialPlayers))
     setSelectedPlayerId(undefined)
     setBallCarrierId(getBallHandler(nextPlay).id)
+    setIsBoardCustom(false)
   }, [])
+
+  const restoreBoardState = useCallback((state: SavedBoardState) => {
+    setIsEditMode(Boolean(state.isCustom))
+    setEditedPlayers(state.players)
+    setEditedPositions(state.positions)
+    setSelectedPlayerId(undefined)
+    setBallCarrierId(state.ballCarrierId)
+    setIsBoardCustom(Boolean(state.isCustom))
+  }, [])
+
+  const resetToPlayDefaults = useCallback(() => {
+    setEditedPlayers(play.initialPlayers)
+    setEditedPositions(getInitialPositions(play.initialPlayers))
+    setSelectedPlayerId(undefined)
+    setBallCarrierId(getBallHandler(play).id)
+    setIsBoardCustom(false)
+  }, [play])
+
+  const clearBoard = useCallback(() => {
+    onEnterEditMode?.()
+    setIsEditMode(true)
+    setEditedPlayers([])
+    setEditedPositions({})
+    setSelectedPlayerId(undefined)
+    setBallCarrierId(undefined)
+    setIsBoardCustom(true)
+  }, [onEnterEditMode])
 
   const addPlayer = useCallback(
     (team: Team) => {
@@ -71,6 +108,7 @@ export function useCourtEditor(play: Play, onEnterEditMode?: () => void) {
           [newPlayer.id]: newPlayer.position,
         }))
         setSelectedPlayerId(newPlayer.id)
+        setIsBoardCustom(true)
 
         return [...currentPlayers, newPlayer]
       })
@@ -91,6 +129,7 @@ export function useCourtEditor(play: Play, onEnterEditMode?: () => void) {
     })
     setBallCarrierId((currentCarrierId) => (currentCarrierId === selectedPlayerId ? undefined : currentCarrierId))
     setSelectedPlayerId(undefined)
+    setIsBoardCustom(true)
   }, [isEditMode, selectedPlayerId])
 
   const selectedPlayer = useMemo(
@@ -98,11 +137,13 @@ export function useCourtEditor(play: Play, onEnterEditMode?: () => void) {
     [editedPlayers, selectedPlayerId],
   )
 
-  const editedBallPosition = resolveBallPosition(
-    editedPositions,
-    ballCarrierId,
-    getBallHandler(play).position,
-  )
+  const editedBallPosition = ballCarrierId
+    ? resolveBallPosition(
+      editedPositions,
+      ballCarrierId,
+      getBallHandler(play).position,
+    )
+    : undefined
 
   return {
     addPlayer,
@@ -110,12 +151,16 @@ export function useCourtEditor(play: Play, onEnterEditMode?: () => void) {
     ballCarrierId,
     canAddDefense: isEditMode && canAddPlayer(editedPlayers, 'defense'),
     canAddOffense: isEditMode && canAddPlayer(editedPlayers, 'offense'),
+    clearBoard,
     editedBallPosition,
     editedPlayers,
     editedPositions,
+    isBoardCustom,
     isEditMode,
     resetEditedPositions,
     resetForPlay,
+    resetToPlayDefaults,
+    restoreBoardState,
     removeSelectedPlayer,
     selectedPlayer,
     selectedPlayerId,

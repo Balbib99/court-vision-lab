@@ -2,8 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Play, Position } from '../types/play'
 import { getBallHandler, getStepPositions, resolveBallPosition } from '../utils/positions'
 
-export const usePlayAnimation = (play: Play) => {
-  const [currentStepIndex, setCurrentStepIndex] = useState(0)
+export const usePlayAnimation = (play: Play, initialStepIndex = 0) => {
+  const [currentStepIndex, setCurrentStepIndex] = useState(() =>
+    Math.min(Math.max(initialStepIndex, 0), play.steps.length - 1),
+  )
   const [isPlaying, setIsPlaying] = useState(false)
   const timeoutRef = useRef<number | undefined>(undefined)
 

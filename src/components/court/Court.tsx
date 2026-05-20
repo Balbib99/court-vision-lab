@@ -11,7 +11,7 @@ import { PlayerMarker } from './PlayerMarker'
 type CourtProps = {
   play: Play
   positions: Record<string, Position>
-  ballPosition: Position
+  ballPosition?: Position
   activeStep?: PlayStep
   activeStepIndex: number
   ballCarrierId?: string
@@ -90,7 +90,7 @@ export function Court({
             }}
           />
         ))}
-        <BallMarker position={ballPosition} />
+        {ballPosition && <BallMarker position={ballPosition} />}
       </div>
     </section>
   )

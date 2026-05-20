@@ -1,14 +1,52 @@
-import { Moon, Save, Search, Settings, Share2, Sun } from 'lucide-react'
+import { Check, Moon, RotateCcw, Save, Search, Settings, Share2, Sun, Trash2 } from 'lucide-react'
 import type { Theme } from '../../hooks/useTheme'
 import type { Play } from '../../types/play'
 
 type TopBarProps = {
   activePlay: Play
+  canClearBoard: boolean
+  onClearBoard: () => void
+  onResetToPlayDefaults: () => void
+  onSaveBoard: () => void
   theme: Theme
+  saveStatus?: 'idle' | 'saved'
   onToggleTheme: () => void
 }
 
-export function TopBar({ activePlay, theme, onToggleTheme }: TopBarProps) {
+export function TopBar({
+  activePlay,
+  canClearBoard,
+  onClearBoard,
+  onResetToPlayDefaults,
+  onSaveBoard,
+  saveStatus = 'idle',
+  theme,
+  onToggleTheme,
+}: TopBarProps) {
+  const managementActions = [
+    {
+      label: saveStatus === 'saved' ? 'Board saved' : 'Save Board',
+      icon: saveStatus === 'saved' ? Check : Save,
+      onClick: onSaveBoard,
+      disabled: false,
+      className: saveStatus === 'saved' ? 'accent-text' : 'text-muted hover:bg-[var(--accent-muted)]',
+    },
+    {
+      label: 'Reset to play defaults',
+      icon: RotateCcw,
+      onClick: onResetToPlayDefaults,
+      disabled: false,
+      className: 'text-muted hover:bg-[var(--accent-muted)]',
+    },
+    {
+      label: canClearBoard ? 'Clear Board' : 'Clear Board available in Edit Mode',
+      icon: Trash2,
+      onClick: onClearBoard,
+      disabled: !canClearBoard,
+      className: 'text-[var(--defense)] hover:bg-[var(--accent-muted)]',
+    },
+  ]
+
   return (
     <header className="topbar panel-glass sticky top-0 z-50 flex h-20 items-center justify-between border-b px-4 md:px-8">
       <div className="flex min-w-0 items-center gap-3 sm:gap-5">
@@ -24,33 +62,57 @@ export function TopBar({ activePlay, theme, onToggleTheme }: TopBarProps) {
 
       <div className="flex items-center gap-2 lg:gap-4">
         <div className="topbar-actions hidden items-center gap-4 lg:flex">
-        <label className="panel flex h-12 w-80 items-center gap-3 rounded-md border px-4 text-[var(--text-muted)]">
-          <Search size={19} aria-hidden="true" />
-          <input
-            className="text-main w-full border-0 bg-transparent p-0 font-mono text-sm outline-none placeholder:text-[var(--text-soft)]"
-            placeholder="Search plays..."
-            disabled
-          />
-        </label>
-        <div className="flex items-center gap-2">
-          {[
-            { label: 'Save coming soon', icon: Save },
-            { label: 'Share coming soon', icon: Share2 },
-            { label: 'Settings coming soon', icon: Settings },
-          ].map(({ label, icon: Icon }) => (
-            <button
-              key={label}
-              type="button"
+          <label className="panel flex h-12 w-80 items-center gap-3 rounded-md border px-4 text-[var(--text-muted)]">
+            <Search size={19} aria-hidden="true" />
+            <input
+              className="text-main w-full border-0 bg-transparent p-0 font-mono text-sm outline-none placeholder:text-[var(--text-soft)]"
+              placeholder="Search plays..."
               disabled
-              className="text-muted flex h-10 w-10 items-center justify-center rounded-md opacity-70"
-              aria-label={label}
-              title={label}
-            >
-              <Icon size={21} aria-hidden="true" />
-            </button>
-          ))}
+            />
+          </label>
+          <div className="flex items-center gap-2">
+            {managementActions.map(({ className, disabled, icon: Icon, label, onClick }) => (
+              <button
+                key={label}
+                type="button"
+                onClick={onClick}
+                disabled={disabled}
+                className={[
+                  'flex h-10 w-10 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-40',
+                  className,
+                ].join(' ')}
+                aria-label={label}
+                title={label}
+              >
+                <Icon size={21} aria-hidden="true" />
+              </button>
+            ))}
+            {[
+              { label: 'Share coming soon', icon: Share2 },
+              { label: 'Settings coming soon', icon: Settings },
+            ].map(({ label, icon: Icon }) => (
+              <button
+                key={label}
+                type="button"
+                disabled
+                className="text-muted flex h-10 w-10 items-center justify-center rounded-md opacity-70"
+                aria-label={label}
+                title={label}
+              >
+                <Icon size={21} aria-hidden="true" />
+              </button>
+            ))}
+          </div>
         </div>
-        </div>
+        <button
+          type="button"
+          onClick={onSaveBoard}
+          className="panel-floating flex h-10 w-10 items-center justify-center rounded-md border text-[var(--accent)] transition hover:bg-[var(--accent-muted)] lg:hidden"
+          aria-label={saveStatus === 'saved' ? 'Board saved' : 'Save Board'}
+          title={saveStatus === 'saved' ? 'Board saved' : 'Save Board'}
+        >
+          {saveStatus === 'saved' ? <Check size={19} aria-hidden="true" /> : <Save size={19} aria-hidden="true" />}
+        </button>
         <button
           type="button"
           onClick={onToggleTheme}
