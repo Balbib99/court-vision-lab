@@ -1,0 +1,48 @@
+export type Team = 'offense' | 'defense'
+
+export type Position = {
+  x: number
+  y: number
+}
+
+export type Player = {
+  id: string
+  label: string
+  team: Team
+  position: Position
+  role?: string
+  hasBall?: boolean
+}
+
+export type Movement = {
+  playerId: string
+  to: Position
+  duration?: number
+  note?: string
+}
+
+export type BallState = {
+  carrierId?: string
+  position?: Position
+}
+
+export type PlayStep = {
+  id: string
+  title: string
+  description: string
+  duration?: number
+  movements: Movement[]
+  ball?: BallState
+}
+
+export type Play = {
+  id: string
+  name: string
+  category: string
+  difficulty: 'Easy' | 'Medium' | 'Advanced'
+  description: string
+  objective: string
+  concepts: string[]
+  initialPlayers: Player[]
+  steps: PlayStep[]
+}

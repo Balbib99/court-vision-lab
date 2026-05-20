@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Hanken+Grotesk:wght@400;500;700&amp;family=JetBrains+Mono:wght@500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .court-pattern {
+            background-color: #131315;
+            background-image: 
+                linear-gradient(rgba(255, 182, 144, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 182, 144, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .glass-panel {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .token-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.06), inset 0 2px 4px 0 rgba(255, 255, 255, 0.05);
+        }
+        .active-tool {
+            box-shadow: 0 0 15px rgba(249, 115, 22, 0.3);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#ffb690",
+                        "surface-container-highest": "#353437",
+                        "secondary-fixed": "#ffdf9a",
+                        "secondary-fixed-dim": "#f7be1d",
+                        "inverse-on-surface": "#313032",
+                        "on-primary-fixed": "#341100",
+                        "primary": "#ffb690",
+                        "on-tertiary-fixed-variant": "#4a4643",
+                        "on-surface": "#e5e1e4",
+                        "surface-dim": "#131315",
+                        "on-tertiary-fixed": "#1e1b19",
+                        "primary-container": "#f97316",
+                        "tertiary-fixed": "#e8e1dd",
+                        "on-secondary-container": "#5b4400",
+                        "tertiary-fixed-dim": "#ccc5c1",
+                        "primary-fixed": "#ffdbca",
+                        "background": "#131315",
+                        "secondary-container": "#e4ae00",
+                        "surface-container-lowest": "#0e0e10",
+                        "on-primary-fixed-variant": "#783200",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary": "#3f2e00",
+                        "outline": "#a78b7d",
+                        "surface-container-low": "#1c1b1d",
+                        "on-error": "#690005",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed": "#251a00",
+                        "surface-bright": "#39393b",
+                        "tertiary-container": "#9f9995",
+                        "on-secondary-fixed-variant": "#5a4300",
+                        "tertiary": "#ccc5c1",
+                        "surface": "#131315",
+                        "on-primary-container": "#582200",
+                        "on-background": "#e5e1e4",
+                        "surface-variant": "#353437",
+                        "on-primary": "#552100",
+                        "secondary": "#ffca45",
+                        "on-surface-variant": "#e0c0b1",
+                        "surface-container": "#201f22",
+                        "inverse-surface": "#e5e1e4",
+                        "inverse-primary": "#9d4300",
+                        "error": "#ffb4ab",
+                        "surface-container-high": "#2a2a2c",
+                        "outline-variant": "#584237",
+                        "on-tertiary": "#33302d",
+                        "on-tertiary-container": "#35312f",
+                        "primary-fixed-dim": "#ffb690"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "max-width": "1440px",
+                        "margin-desktop": "40px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "toolbar-height": "64px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["JetBrains Mono"],
+                        "display-lg": ["Anton"],
+                        "headline-lg-mobile": ["Anton"],
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-lg": ["Anton"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "label-md": ["JetBrains Mono"],
+                        "headline-md": ["Anton"],
+                        "player-number": ["Anton"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                        "display-lg": ["64px", {"lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "headline-md": ["24px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "400"}],
+                        "player-number": ["18px", {"lineHeight": "1", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-lg text-body-lg overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="bg-surface-container/80 backdrop-blur-xl border-b border-outline-variant/30 docked full-width top-0 sticky flex justify-between items-center w-full px-margin-desktop h-toolbar-height z-50">
+<div class="flex items-center gap-6">
+<h1 class="text-headline-md font-headline-md text-primary-container">COURT VISION</h1>
+<div class="h-6 w-px bg-outline-variant/50"></div>
+<div class="flex flex-col">
+<span class="text-label-sm font-label-sm text-on-surface-variant uppercase">Active Play</span>
+<span class="text-body-md font-bold text-on-surface">Horn Set - Double Screen Flare</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center bg-surface-container-high px-4 py-2 rounded-lg border border-outline-variant/20">
+<span class="material-symbols-outlined text-on-surface-variant mr-2 text-[20px]">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-label-md text-on-surface w-48 p-0" placeholder="Search plays..." type="text"/>
+</div>
+<div class="flex gap-1">
+<button class="p-2 rounded-lg hover:bg-surface-variant transition-colors active:scale-95 duration-150 text-on-surface-variant">
+<span class="material-symbols-outlined">save</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-surface-variant transition-colors active:scale-95 duration-150 text-on-surface-variant">
+<span class="material-symbols-outlined">share</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-surface-variant transition-colors active:scale-95 duration-150 text-on-surface-variant">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<img alt="Coach Avatar" class="w-8 h-8 rounded-full border border-primary-container/40 object-cover" data-alt="A professional studio portrait of a basketball coach in a sleek dark athletic polo shirt. The lighting is dramatic and high-contrast, characteristic of high-stakes sports media. The background is a blurred high-end basketball arena with subtle blue and orange neon ambient lighting, reinforcing a premium tactical atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcjXx_HJoUUCRw-zDw0-pzKIZps9Vz-tAt9EUPp0v69xKD3WjsXpwq7vCr1ylOjRMIJc4Iao1GAK2f6O_cwZ94TL4nC4f4iK0xyZPlodg-Rgu5H8L-tocAwXl1XV-LcElqOozHd9oVC1P6MKh-ORcTlYyGa-dSofm613zxryg01AQ184UvDKQ6I2sPeK2x8bBFpeyIQAmJtnJSE_NVALtB1MZHLWk_ItOd_w-fH_9zUKL4Q6ikCQ62YhdBUCYKOkaMIRom1xPaQFA"/>
+</div>
+</header>
+<div class="flex h-[calc(100vh-64px)]">
+<!-- SideNavBar -->
+<nav class="bg-surface-container-low border-r border-outline-variant/20 shadow-2xl h-screen w-toolbar-height flex flex-col py-4 space-y-4 z-40">
+<div class="flex flex-col items-center mb-6 px-2">
+<div class="w-10 h-10 bg-primary-container/20 rounded-xl flex items-center justify-center mb-1 overflow-hidden border border-primary-container/30">
+<img alt="Warriors Elite" data-alt="A minimalist and sharp sports franchise logo featuring a stylized gold 'W' integrated with a basketball hoop silhouette. The design is modern, flat, and vector-style, set against a dark premium navy blue background, evoking a sense of championship-level elite status and professional athletic branding." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0CLy_VW8SuILzr5Gqx7v6_6pIiWbcStZzE9JQZtGRmQAfGFkyHhERzTigYHWzo__gE_d4LzVLRURaTCY6Ha-YlVK1PIBVFuGkyMZjwgHx-gN8ri9HCDowD3dYIu4LDBmBmUwKq8bo9k3N7miVJKMv5ZO4NCHdrCdNtTJLTq5zCxEhHGtldoXbQ0EC3zXh_srgp2vZ6kjgBmQe5bLjOkfwD1Al6tjcAfwOC_oznQL1GpWh4VoyxtIJwEUr09fQ6ebCz2_O0pPl5yo"/>
+</div>
+</div>
+<a class="bg-primary-container text-on-primary-container rounded-xl mx-2 my-1 flex flex-col items-center justify-center py-3 active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">strategy</span>
+<span class="text-[10px] mt-1 font-bold uppercase tracking-wider">Board</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all flex flex-col items-center justify-center py-3 active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">folder_special</span>
+<span class="text-[10px] mt-1 font-bold uppercase tracking-wider">Library</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all flex flex-col items-center justify-center py-3 active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="text-[10px] mt-1 font-bold uppercase tracking-wider">Roster</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all flex flex-col items-center justify-center py-3 active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">query_stats</span>
+<span class="text-[10px] mt-1 font-bold uppercase tracking-wider">Stats</span>
+</a>
+<div class="mt-auto pb-4">
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all flex flex-col items-center justify-center py-3" href="#">
+<span class="material-symbols-outlined">settings</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 relative overflow-hidden flex flex-col items-center justify-center p-8 bg-surface-container-lowest">
+<!-- Basketball Court (Full Court) -->
+<div class="relative w-full max-w-6xl aspect-[16/9] bg-surface-dim rounded-xl border-4 border-surface-container-highest shadow-2xl court-pattern overflow-hidden">
+<!-- Court Markings -->
+<div class="absolute inset-0 border-2 border-primary/20 pointer-events-none"></div>
+<!-- Half court line -->
+<div class="absolute top-0 bottom-0 left-1/2 w-px bg-primary/20 pointer-events-none"></div>
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-2 border-primary/20 rounded-full pointer-events-none"></div>
+<!-- Key Left -->
+<div class="absolute top-1/2 -translate-y-1/2 left-0 w-1/5 h-[40%] border-2 border-primary/20 pointer-events-none"></div>
+<div class="absolute top-1/2 -translate-y-1/2 left-[15%] w-24 h-48 border-2 border-primary/20 rounded-full border-l-0 pointer-events-none"></div>
+<div class="absolute top-1/2 -translate-y-1/2 -left-20 w-[45%] h-[80%] border-2 border-primary/20 rounded-full pointer-events-none"></div>
+<!-- Key Right -->
+<div class="absolute top-1/2 -translate-y-1/2 right-0 w-1/5 h-[40%] border-2 border-primary/20 pointer-events-none"></div>
+<div class="absolute top-1/2 -translate-y-1/2 right-[15%] w-24 h-48 border-2 border-primary/20 rounded-full border-r-0 pointer-events-none"></div>
+<div class="absolute top-1/2 -translate-y-1/2 -right-20 w-[45%] h-[80%] border-2 border-primary/20 rounded-full pointer-events-none"></div>
+<!-- Tactical Tokens (Mock Players) -->
+<!-- Team A (Orange) -->
+<div class="absolute top-[35%] left-[25%] w-10 h-10 bg-primary-container rounded-full border-2 border-primary-fixed flex items-center justify-center text-on-primary-container font-player-number text-player-number token-shadow cursor-move hover:scale-110 transition-transform">1</div>
+<div class="absolute top-[55%] left-[30%] w-10 h-10 bg-primary-container rounded-full border-2 border-primary-fixed flex items-center justify-center text-on-primary-container font-player-number text-player-number token-shadow cursor-move hover:scale-110 transition-transform">4</div>
+<div class="absolute top-[48%] left-[10%] w-10 h-10 bg-primary-container rounded-full border-2 border-primary-fixed flex items-center justify-center text-on-primary-container font-player-number text-player-number token-shadow cursor-move hover:scale-110 transition-transform">5</div>
+<!-- Team B (White/Grey) -->
+<div class="absolute top-[38%] left-[45%] w-10 h-10 bg-surface-container-highest rounded-full border-2 border-outline flex items-center justify-center text-on-surface font-player-number text-player-number token-shadow cursor-move hover:scale-110 transition-transform">3</div>
+<div class="absolute top-[52%] left-[48%] w-10 h-10 bg-surface-container-highest rounded-full border-2 border-outline flex items-center justify-center text-on-surface font-player-number text-player-number token-shadow cursor-move hover:scale-110 transition-transform">2</div>
+<!-- The Ball -->
+<div class="absolute top-[48%] left-[42%] w-6 h-6 bg-secondary-container rounded-full border-2 border-secondary flex items-center justify-center text-white text-[12px] token-shadow cursor-move animate-pulse">🏀</div>
+</div>
+<!-- Floating Tactical Tool Panel -->
+<div class="absolute right-8 top-1/2 -translate-y-1/2 flex flex-col gap-4">
+<!-- Tool Selection -->
+<div class="glass-panel bg-surface-container-high/60 border border-outline-variant/30 rounded-2xl p-2 flex flex-col gap-2 shadow-2xl">
+<button class="w-12 h-12 rounded-xl flex items-center justify-center transition-all bg-primary-container text-on-primary-container active-tool">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="w-12 h-12 rounded-xl flex items-center justify-center transition-all text-on-surface-variant hover:bg-surface-variant">
+<span class="material-symbols-outlined">trending_flat</span>
+</button>
+<button class="w-12 h-12 rounded-xl flex items-center justify-center transition-all text-on-surface-variant hover:bg-surface-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0">linear_scale</span>
+</button>
+<button class="w-12 h-12 rounded-xl flex items-center justify-center transition-all text-on-surface-variant hover:bg-surface-variant">
+<span class="material-symbols-outlined">ink_eraser</span>
+</button>
+<div class="w-8 h-px bg-outline-variant/30 self-center my-1"></div>
+<button class="w-12 h-12 rounded-xl flex items-center justify-center transition-all text-error hover:bg-error-container/20">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+<!-- Color/Player Spawner -->
+<div class="glass-panel bg-surface-container-high/60 border border-outline-variant/30 rounded-2xl p-2 flex flex-col gap-3 shadow-2xl">
+<div class="w-12 h-12 rounded-full bg-primary-container border-2 border-primary-fixed flex items-center justify-center text-on-primary-container font-headline-md cursor-pointer hover:scale-110 transition-transform text-[14px]">+A</div>
+<div class="w-12 h-12 rounded-full bg-surface-container-highest border-2 border-outline flex items-center justify-center text-on-surface font-headline-md cursor-pointer hover:scale-110 transition-transform text-[14px]">+B</div>
+</div>
+</div>
+<!-- Bottom Status Bar -->
+<div class="absolute bottom-8 left-1/2 -translate-x-1/2 w-full max-w-2xl px-6 py-3 glass-panel bg-surface-container/90 rounded-full border border-outline-variant/30 flex justify-between items-center shadow-xl">
+<div class="flex gap-8">
+<div class="flex flex-col items-center">
+<span class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-tighter">Period</span>
+<span class="text-body-lg font-headline-md text-on-surface">Q3</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-tighter">Clock</span>
+<span class="text-body-lg font-headline-md text-primary-container">08:42</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex flex-col items-end">
+<span class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-tighter">WARRIORS FOULS</span>
+<div class="flex gap-1 mt-1">
+<div class="w-4 h-1.5 bg-primary-container rounded-full"></div>
+<div class="w-4 h-1.5 bg-primary-container rounded-full"></div>
+<div class="w-4 h-1.5 bg-outline-variant/20 rounded-full"></div>
+<div class="w-4 h-1.5 bg-outline-variant/20 rounded-full"></div>
+</div>
+</div>
+<div class="w-px h-8 bg-outline-variant/30 mx-2"></div>
+<div class="flex flex-col items-start">
+<span class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-tighter">OPPONENT FOULS</span>
+<div class="flex gap-1 mt-1">
+<div class="w-4 h-1.5 bg-on-surface-variant rounded-full"></div>
+<div class="w-4 h-1.5 bg-outline-variant/20 rounded-full"></div>
+<div class="w-4 h-1.5 bg-outline-variant/20 rounded-full"></div>
+<div class="w-4 h-1.5 bg-outline-variant/20 rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Mobile Bottom Navigation (Hidden on MD up) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-surface-container/95 backdrop-blur-lg border-t border-outline-variant/20 md:hidden">
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-6 py-2" href="#">
+<span class="material-symbols-outlined">edit_square</span>
+<span class="text-[10px] font-bold uppercase">Board</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant py-2" href="#">
+<span class="material-symbols-outlined">library_books</span>
+<span class="text-[10px] font-bold uppercase">Library</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant py-2" href="#">
+<span class="material-symbols-outlined">badge</span>
+<span class="text-[10px] font-bold uppercase">Roster</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant py-2" href="#">
+<span class="material-symbols-outlined">tune</span>
+<span class="text-[10px] font-bold uppercase">Settings</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interaction for tool selection
+        document.querySelectorAll('.glass-panel button').forEach(button => {
+            button.addEventListener('click', function() {
+                if(this.parentElement.children.length > 3) { // Selection panel only
+                    document.querySelectorAll('.glass-panel button').forEach(b => {
+                        b.classList.remove('bg-primary-container', 'text-on-primary-container', 'active-tool');
+                        b.classList.add('text-on-surface-variant');
+                    });
+                    this.classList.remove('text-on-surface-variant');
+                    this.classList.add('bg-primary-container', 'text-on-primary-container', 'active-tool');
+                }
+            });
+        });
+
+        // Toggle simulation for drawing (visual only)
+        const court = document.querySelector('.court-pattern');
+        court.addEventListener('mousedown', () => {
+           court.style.cursor = 'crosshair';
+        });
+        court.addEventListener('mouseup', () => {
+           court.style.cursor = 'default';
+        });
+    </script>
+</body></html>
