@@ -1,7 +1,8 @@
 import type { Play } from '../types/play'
 import { normalizeBoardState, type SavedBoardState } from './boardState'
 
-const boardStateKey = 'court-vision-lab:board-state'
+const legacyBoardStateKey = 'court-vision-lab:board-state'
+const boardStateStorageKey = 'court-vision-lab-board-state'
 
 export const loadBoardState = (plays: Play[]): SavedBoardState | undefined => {
   if (typeof window === 'undefined') {
@@ -9,12 +10,20 @@ export const loadBoardState = (plays: Play[]): SavedBoardState | undefined => {
   }
 
   try {
-    const rawState = window.localStorage.getItem(boardStateKey)
+    const rawState =
+      window.localStorage.getItem(boardStateStorageKey) ??
+      window.localStorage.getItem(legacyBoardStateKey)
     if (!rawState) {
       return undefined
     }
 
-    return normalizeBoardState(JSON.parse(rawState), plays)
+    const state = normalizeBoardState(JSON.parse(rawState), plays)
+    if (state && !window.localStorage.getItem(boardStateStorageKey)) {
+      saveBoardState(state)
+      window.localStorage.removeItem(legacyBoardStateKey)
+    }
+
+    return state
   } catch {
     return undefined
   }
@@ -25,7 +34,7 @@ export const saveBoardState = (state: SavedBoardState) => {
     return
   }
 
-  window.localStorage.setItem(boardStateKey, JSON.stringify(state))
+  window.localStorage.setItem(boardStateStorageKey, JSON.stringify(state))
 }
 
 export const removeBoardState = () => {
@@ -33,5 +42,6 @@ export const removeBoardState = () => {
     return
   }
 
-  window.localStorage.removeItem(boardStateKey)
+  window.localStorage.removeItem(boardStateStorageKey)
+  window.localStorage.removeItem(legacyBoardStateKey)
 }

@@ -4,7 +4,7 @@ import type { Play, Player, PlayStep } from '../../types/play'
 import { BottomControls } from './BottomControls'
 import { RightToolbar } from './RightToolbar'
 import { Sidebar } from './Sidebar'
-import { TopBar } from './TopBar'
+import { TopBar, type BoardSaveStatus } from './TopBar'
 
 type AppShellProps = {
   activePlay: Play
@@ -14,6 +14,7 @@ type AppShellProps = {
   canAddDefense: boolean
   canAddOffense: boolean
   canClearBoard: boolean
+  clearBoardLabel: string
   children: ReactNode
   isPlaying: boolean
   isEditMode: boolean
@@ -33,7 +34,7 @@ type AppShellProps = {
   onStepSelect: (stepIndex: number) => void
   stepCount: number
   theme: Theme
-  saveStatus?: 'idle' | 'saved'
+  saveStatus?: BoardSaveStatus
   selectedPlayer?: Player
 }
 
@@ -45,6 +46,7 @@ export function AppShell({
   canAddDefense,
   canAddOffense,
   canClearBoard,
+  clearBoardLabel,
   children,
   isPlaying,
   isEditMode,
@@ -72,6 +74,7 @@ export function AppShell({
       <TopBar
         activePlay={activePlay}
         canClearBoard={canClearBoard}
+        clearBoardLabel={clearBoardLabel}
         onClearBoard={onClearBoard}
         onResetToPlayDefaults={onResetToPlayDefaults}
         onSaveBoard={onSaveBoard}

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Court } from './components/court/Court'
 import { AppShell } from './components/layout/AppShell'
+import type { BoardSaveStatus } from './components/layout/TopBar'
 import { PlayDetailsPanel } from './components/plays/PlayDetailsPanel'
 import { defaultPlay, plays } from './data/plays'
 import { useCourtEditor } from './hooks/useCourtEditor'
@@ -15,8 +16,9 @@ function App() {
   const { theme, toggleTheme } = useTheme()
   const [initialBoardState] = useState(() => loadBoardState(plays))
   const [selectedPlayId, setSelectedPlayId] = useState(initialBoardState?.selectedPlayId ?? defaultPlay.id)
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle')
+  const [saveStatus, setSaveStatus] = useState<BoardSaveStatus>('idle')
   const saveStatusTimerRef = useRef<number | undefined>(undefined)
+  const didPrimeAutosaveRef = useRef(false)
   const selectedPlay = useMemo(
     () => plays.find((play) => play.id === selectedPlayId) ?? defaultPlay,
     [selectedPlayId],
@@ -60,16 +62,16 @@ function App() {
   const courtPositions = isEditMode ? editedPositions : positions
   const courtBallPosition = isEditMode ? editedBallPosition : ballPosition
 
-  const showSavedFeedback = useCallback(() => {
+  const showSaveFeedback = useCallback((status: Exclude<BoardSaveStatus, 'idle'>) => {
     if (saveStatusTimerRef.current) {
       window.clearTimeout(saveStatusTimerRef.current)
     }
 
-    setSaveStatus('saved')
+    setSaveStatus(status)
     saveStatusTimerRef.current = window.setTimeout(() => {
       setSaveStatus('idle')
       saveStatusTimerRef.current = undefined
-    }, 1300)
+    }, status === 'unsaved' ? 2200 : 1500)
   }, [])
 
   const createDefaultStateForPlay = useCallback((play = selectedPlay) => {
@@ -110,20 +112,28 @@ function App() {
 
   const handleSaveBoard = useCallback(() => {
     saveBoardState(createCurrentBoardState())
-    showSavedFeedback()
-  }, [createCurrentBoardState, showSavedFeedback])
+    showSaveFeedback('saved')
+  }, [createCurrentBoardState, showSaveFeedback])
 
   useEffect(() => {
     if (!isEditMode) {
+      didPrimeAutosaveRef.current = false
       return
     }
 
+    if (!didPrimeAutosaveRef.current) {
+      didPrimeAutosaveRef.current = true
+      return
+    }
+
+    setSaveStatus('unsaved')
     const autosaveTimer = window.setTimeout(() => {
       saveBoardState(createCurrentBoardState())
+      showSaveFeedback('autosaved')
     }, 650)
 
     return () => window.clearTimeout(autosaveTimer)
-  }, [createCurrentBoardState, isEditMode])
+  }, [createCurrentBoardState, isEditMode, showSaveFeedback])
 
   const handleSelectPlay = (playId: string) => {
     const nextPlay = plays.find((play) => play.id === playId) ?? defaultPlay
@@ -146,11 +156,11 @@ function App() {
     reset()
     resetToPlayDefaults()
     saveBoardState(createDefaultStateForPlay())
-    showSavedFeedback()
+    showSaveFeedback('saved')
   }
 
   const handleClearBoard = () => {
-    if (!isEditMode) {
+    if (!isEditMode || editedPlayers.length === 0) {
       return
     }
 
@@ -169,8 +179,15 @@ function App() {
       ballCarrierId: undefined,
       isCustom: true,
     }))
-    showSavedFeedback()
+    showSaveFeedback('saved')
   }
+
+  const canClearBoard = isEditMode && editedPlayers.length > 0
+  const clearBoardLabel = !isEditMode
+    ? 'Clear Board available in Edit Mode'
+    : editedPlayers.length > 0
+      ? 'Clear Board'
+      : 'Board is already clear'
 
   return (
     <AppShell
@@ -180,7 +197,8 @@ function App() {
       ballCarrierId={ballCarrierId}
       canAddDefense={canAddDefense}
       canAddOffense={canAddOffense}
-      canClearBoard={isEditMode}
+      canClearBoard={canClearBoard}
+      clearBoardLabel={clearBoardLabel}
       isPlaying={isPlaying}
       isEditMode={isEditMode}
       onAddDefense={() => addPlayer('defense')}

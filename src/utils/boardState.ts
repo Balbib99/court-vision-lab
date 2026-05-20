@@ -12,9 +12,12 @@ export type SavedBoardState = {
   positions: Record<string, Position>
   ballCarrierId?: string
   isCustom: boolean
+  updatedAt: string
 }
 
-type BoardStateInput = Omit<SavedBoardState, 'version'>
+type BoardStateInput = Omit<SavedBoardState, 'version' | 'updatedAt'> & {
+  updatedAt?: string
+}
 
 const teamPrefix: Record<Team, 'O' | 'D'> = {
   offense: 'O',
@@ -120,6 +123,7 @@ export const createBoardState = ({
   players,
   positions,
   selectedPlayId,
+  updatedAt,
 }: BoardStateInput): SavedBoardState => ({
   version: boardStateVersion,
   selectedPlayId,
@@ -132,6 +136,7 @@ export const createBoardState = ({
   positions: normalizePositions(positions, players),
   ballCarrierId: ballCarrierId && players.some((player) => player.id === ballCarrierId) ? ballCarrierId : undefined,
   isCustom,
+  updatedAt: updatedAt ?? new Date().toISOString(),
 })
 
 export const normalizeBoardState = (

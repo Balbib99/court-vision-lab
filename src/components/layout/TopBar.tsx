@@ -2,20 +2,24 @@ import { Check, Moon, RotateCcw, Save, Search, Settings, Share2, Sun, Trash2 } f
 import type { Theme } from '../../hooks/useTheme'
 import type { Play } from '../../types/play'
 
+export type BoardSaveStatus = 'idle' | 'saved' | 'unsaved' | 'autosaved'
+
 type TopBarProps = {
   activePlay: Play
   canClearBoard: boolean
+  clearBoardLabel: string
   onClearBoard: () => void
   onResetToPlayDefaults: () => void
   onSaveBoard: () => void
   theme: Theme
-  saveStatus?: 'idle' | 'saved'
+  saveStatus?: BoardSaveStatus
   onToggleTheme: () => void
 }
 
 export function TopBar({
   activePlay,
   canClearBoard,
+  clearBoardLabel,
   onClearBoard,
   onResetToPlayDefaults,
   onSaveBoard,
@@ -23,9 +27,16 @@ export function TopBar({
   theme,
   onToggleTheme,
 }: TopBarProps) {
+  const saveStatusLabel = {
+    idle: '',
+    saved: 'Saved',
+    unsaved: 'Unsaved changes',
+    autosaved: 'Auto-saved',
+  }[saveStatus]
+
   const managementActions = [
     {
-      label: saveStatus === 'saved' ? 'Board saved' : 'Save Board',
+      label: saveStatus === 'saved' || saveStatus === 'autosaved' ? 'Board saved' : 'Save Board',
       icon: saveStatus === 'saved' ? Check : Save,
       onClick: onSaveBoard,
       disabled: false,
@@ -39,7 +50,7 @@ export function TopBar({
       className: 'text-muted hover:bg-[var(--accent-muted)]',
     },
     {
-      label: canClearBoard ? 'Clear Board' : 'Clear Board available in Edit Mode',
+      label: clearBoardLabel,
       icon: Trash2,
       onClick: onClearBoard,
       disabled: !canClearBoard,
@@ -71,6 +82,11 @@ export function TopBar({
             />
           </label>
           <div className="flex items-center gap-2">
+            {saveStatusLabel && (
+              <span className="panel rounded-md border px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--text-muted)]">
+                {saveStatusLabel}
+              </span>
+            )}
             {managementActions.map(({ className, disabled, icon: Icon, label, onClick }) => (
               <button
                 key={label}
@@ -108,10 +124,29 @@ export function TopBar({
           type="button"
           onClick={onSaveBoard}
           className="panel-floating flex h-10 w-10 items-center justify-center rounded-md border text-[var(--accent)] transition hover:bg-[var(--accent-muted)] lg:hidden"
-          aria-label={saveStatus === 'saved' ? 'Board saved' : 'Save Board'}
-          title={saveStatus === 'saved' ? 'Board saved' : 'Save Board'}
+          aria-label={saveStatus === 'saved' || saveStatus === 'autosaved' ? 'Board saved' : 'Save Board'}
+          title={saveStatus === 'saved' || saveStatus === 'autosaved' ? 'Board saved' : 'Save Board'}
         >
           {saveStatus === 'saved' ? <Check size={19} aria-hidden="true" /> : <Save size={19} aria-hidden="true" />}
+        </button>
+        <button
+          type="button"
+          onClick={onResetToPlayDefaults}
+          className="panel-floating hidden h-10 w-10 items-center justify-center rounded-md border text-[var(--text-muted)] transition hover:bg-[var(--accent-muted)] sm:flex lg:hidden"
+          aria-label="Reset to play defaults"
+          title="Reset to play defaults"
+        >
+          <RotateCcw size={19} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          onClick={onClearBoard}
+          disabled={!canClearBoard}
+          className="panel-floating hidden h-10 w-10 items-center justify-center rounded-md border text-[var(--defense)] transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-40 sm:flex lg:hidden"
+          aria-label={clearBoardLabel}
+          title={clearBoardLabel}
+        >
+          <Trash2 size={18} aria-hidden="true" />
         </button>
         <button
           type="button"
