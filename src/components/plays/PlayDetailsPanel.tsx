@@ -17,7 +17,7 @@ export function PlayDetailsPanel({
   plays,
 }: PlayDetailsPanelProps) {
   return (
-    <aside className="play-details-panel panel-glass w-full border-t p-4 pb-8 xl:absolute xl:left-6 xl:top-6 xl:z-30 xl:w-[340px] xl:border xl:pb-4">
+    <aside className="play-details-panel panel-floating w-full border-t p-4 pb-8 xl:absolute xl:left-6 xl:top-6 xl:z-30 xl:w-[340px] xl:border xl:pb-4">
       <div className="play-details-selector">
         <PlaySelector plays={plays} selectedPlayId={play.id} onSelect={onSelectPlay} />
       </div>
@@ -28,7 +28,7 @@ export function PlayDetailsPanel({
             <p className="accent-text font-mono text-[11px] uppercase tracking-[0.16em]">{play.category}</p>
             <h2 className="text-main mt-1 font-display text-2xl tracking-[0.05em]">{play.name}</h2>
           </div>
-          <span className="accent-bg-soft tactical-border-strong accent-text rounded-sm border px-2 py-1 font-mono text-[11px] font-bold">
+          <span className="accent-badge rounded-sm px-2 py-1 font-mono text-[11px] font-bold">
             {play.difficulty}
           </span>
         </div>
@@ -57,7 +57,7 @@ export function PlayDetailsPanel({
               className={[
                 'border px-3 py-2 text-sm',
                 isActive
-                  ? 'tactical-border-strong bg-[var(--accent-muted)]'
+                  ? 'accent-badge'
                   : isDone
                     ? 'tactical-border-strong bg-[var(--surface)]'
                     : 'tactical-border bg-[var(--surface-strong)]',
@@ -72,7 +72,7 @@ export function PlayDetailsPanel({
 
       <div className="play-concepts mt-5 flex flex-wrap gap-2">
         {play.concepts.map((concept) => (
-          <span key={concept} className="accent-bg-soft accent-text border-l-2 border-[var(--accent)] px-2.5 py-1 font-mono text-[11px] uppercase tracking-wide">
+          <span key={concept} className="accent-badge border-l-2 border-l-[var(--accent)] px-2.5 py-1 font-mono text-[11px] uppercase tracking-wide">
             {concept}
           </span>
         ))}

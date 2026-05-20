@@ -10,7 +10,7 @@ const tools = [
 export function RightToolbar() {
   return (
     <div className="right-toolbar pointer-events-none absolute right-4 top-1/2 z-40 hidden -translate-y-1/2 flex-col gap-4 lg:flex">
-      <div className="right-toolbar-tools panel-glass pointer-events-auto flex flex-col gap-2 rounded-lg border p-2">
+      <div className="right-toolbar-tools panel-floating pointer-events-auto flex flex-col gap-2 rounded-lg border p-2">
         {tools.map(({ label, icon: Icon, active }) => (
           <button
             key={label}
@@ -38,7 +38,7 @@ export function RightToolbar() {
         </button>
       </div>
 
-      <div className="right-toolbar-spawn panel-glass pointer-events-auto flex flex-col gap-3 rounded-lg border p-2">
+      <div className="right-toolbar-spawn panel-floating pointer-events-auto flex flex-col gap-3 rounded-lg border p-2">
         <button type="button" disabled className="spawn-button accent-bg flex h-12 w-12 items-center justify-center rounded-full border-2 border-[color:var(--accent-soft)] font-mono text-xs font-black" aria-label="Add offense coming soon">
           <Plus size={13} aria-hidden="true" />A
         </button>

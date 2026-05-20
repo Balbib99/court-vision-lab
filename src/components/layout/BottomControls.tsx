@@ -31,7 +31,7 @@ export function BottomControls({
   stepCount,
 }: BottomControlsProps) {
   return (
-    <div className="bottom-controls panel-glass z-30 mx-auto flex w-full max-w-4xl flex-col gap-3 rounded-2xl border px-4 py-3 sm:rounded-3xl sm:px-5">
+    <div className="bottom-controls panel-floating z-30 mx-auto flex w-full max-w-4xl flex-col gap-3 rounded-2xl border px-4 py-3 sm:rounded-3xl sm:px-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="bottom-controls-primary flex items-center gap-2.5">
           <button
@@ -102,7 +102,7 @@ export function BottomControls({
               className={[
                 'timeline-step min-w-[126px] flex-1 rounded-md border px-3 py-2 text-left transition',
                 isActive
-                  ? 'tactical-border-strong bg-[var(--accent-muted)]'
+                  ? 'accent-badge'
                   : isComplete
                     ? 'tactical-border-strong bg-[var(--surface)]'
                     : 'tactical-border bg-[var(--surface-strong)]',
