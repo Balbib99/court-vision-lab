@@ -14,6 +14,7 @@ type AppShellProps = {
   canAddDefense: boolean
   canAddOffense: boolean
   canClearBoard: boolean
+  canDeleteCustomPlay: boolean
   clearBoardLabel: string
   children: ReactNode
   isPlaying: boolean
@@ -22,8 +23,11 @@ type AppShellProps = {
   onAddOffense: () => void
   onAssignBall: () => void
   onClearBoard: () => void
+  onDeleteCustomPlay: () => void
+  onDuplicatePlay: () => void
   onRemoveSelectedPlayer: () => void
   onResetToPlayDefaults: () => void
+  onSaveAsCustomPlay: () => void
   onSaveBoard: () => void
   onToggleTheme: () => void
   onToggleEditMode: () => void
@@ -34,6 +38,7 @@ type AppShellProps = {
   onStepSelect: (stepIndex: number) => void
   stepCount: number
   theme: Theme
+  playbookMessage?: string
   saveStatus?: BoardSaveStatus
   selectedPlayer?: Player
 }
@@ -46,6 +51,7 @@ export function AppShell({
   canAddDefense,
   canAddOffense,
   canClearBoard,
+  canDeleteCustomPlay,
   clearBoardLabel,
   children,
   isPlaying,
@@ -54,8 +60,11 @@ export function AppShell({
   onAddOffense,
   onAssignBall,
   onClearBoard,
+  onDeleteCustomPlay,
+  onDuplicatePlay,
   onRemoveSelectedPlayer,
   onResetToPlayDefaults,
+  onSaveAsCustomPlay,
   onSaveBoard,
   onNextStep,
   onPlayFullSequence,
@@ -63,6 +72,7 @@ export function AppShell({
   onReset,
   onStepSelect,
   stepCount,
+  playbookMessage,
   saveStatus,
   onToggleTheme,
   onToggleEditMode,
@@ -74,10 +84,15 @@ export function AppShell({
       <TopBar
         activePlay={activePlay}
         canClearBoard={canClearBoard}
+        canDeleteCustomPlay={canDeleteCustomPlay}
         clearBoardLabel={clearBoardLabel}
         onClearBoard={onClearBoard}
+        onDeleteCustomPlay={onDeleteCustomPlay}
+        onDuplicatePlay={onDuplicatePlay}
         onResetToPlayDefaults={onResetToPlayDefaults}
+        onSaveAsCustomPlay={onSaveAsCustomPlay}
         onSaveBoard={onSaveBoard}
+        playbookMessage={playbookMessage}
         saveStatus={saveStatus}
         theme={theme}
         onToggleTheme={onToggleTheme}

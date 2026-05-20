@@ -5,23 +5,29 @@ import { AppShell } from './components/layout/AppShell'
 import type { BoardSaveStatus } from './components/layout/TopBar'
 import { PlayDetailsPanel } from './components/plays/PlayDetailsPanel'
 import { defaultPlay, plays } from './data/plays'
+import { useCustomPlays } from './hooks/useCustomPlays'
 import { useCourtEditor } from './hooks/useCourtEditor'
 import { usePlayAnimation } from './hooks/usePlayAnimation'
 import { useTheme } from './hooks/useTheme'
+import { createCustomPlayFromBoard, duplicatePlayAsCustom, isCustomPlay } from './utils/customPlays'
 import { createBoardState } from './utils/boardState'
 import { getBallHandler, getInitialPositions } from './utils/positions'
 import { loadBoardState, saveBoardState } from './utils/storage'
 
 function App() {
   const { theme, toggleTheme } = useTheme()
-  const [initialBoardState] = useState(() => loadBoardState(plays))
+  const { addCustomPlay, customPlays, deleteCustomPlay } = useCustomPlays()
+  const allPlays = useMemo(() => [...plays, ...customPlays], [customPlays])
+  const [initialBoardState] = useState(() => loadBoardState([...plays, ...customPlays]))
   const [selectedPlayId, setSelectedPlayId] = useState(initialBoardState?.selectedPlayId ?? defaultPlay.id)
   const [saveStatus, setSaveStatus] = useState<BoardSaveStatus>('idle')
+  const [playbookMessage, setPlaybookMessage] = useState('')
   const saveStatusTimerRef = useRef<number | undefined>(undefined)
+  const playbookMessageTimerRef = useRef<number | undefined>(undefined)
   const didPrimeAutosaveRef = useRef(false)
   const selectedPlay = useMemo(
-    () => plays.find((play) => play.id === selectedPlayId) ?? defaultPlay,
-    [selectedPlayId],
+    () => allPlays.find((play) => play.id === selectedPlayId) ?? defaultPlay,
+    [allPlays, selectedPlayId],
   )
   const {
     activeStep,
@@ -61,6 +67,7 @@ function App() {
   } = useCourtEditor(selectedPlay, pause, initialBoardState)
   const courtPositions = isEditMode ? editedPositions : positions
   const courtBallPosition = isEditMode ? editedBallPosition : ballPosition
+  const selectedPlayIsCustom = isCustomPlay(selectedPlay)
 
   const showSaveFeedback = useCallback((status: Exclude<BoardSaveStatus, 'idle'>) => {
     if (saveStatusTimerRef.current) {
@@ -72,6 +79,18 @@ function App() {
       setSaveStatus('idle')
       saveStatusTimerRef.current = undefined
     }, status === 'unsaved' ? 2200 : 1500)
+  }, [])
+
+  const showPlaybookMessage = useCallback((message: string) => {
+    if (playbookMessageTimerRef.current) {
+      window.clearTimeout(playbookMessageTimerRef.current)
+    }
+
+    setPlaybookMessage(message)
+    playbookMessageTimerRef.current = window.setTimeout(() => {
+      setPlaybookMessage('')
+      playbookMessageTimerRef.current = undefined
+    }, 1800)
   }, [])
 
   const createDefaultStateForPlay = useCallback((play = selectedPlay) => {
@@ -136,11 +155,82 @@ function App() {
   }, [createCurrentBoardState, isEditMode, showSaveFeedback])
 
   const handleSelectPlay = (playId: string) => {
-    const nextPlay = plays.find((play) => play.id === playId) ?? defaultPlay
+    const nextPlay = allPlays.find((play) => play.id === playId) ?? defaultPlay
     reset()
     resetForPlay(nextPlay)
     setSelectedPlayId(playId)
     saveBoardState(createDefaultStateForPlay(nextPlay))
+  }
+
+  const handleSaveAsCustomPlay = () => {
+    const name = window.prompt('Name this custom play')
+    if (!name) {
+      return
+    }
+
+    const trimmedName = name.trim()
+    if (!trimmedName) {
+      showPlaybookMessage('Invalid play name')
+      return
+    }
+
+    const description = window.prompt('Add a short description optional') ?? undefined
+    const customPlay = createCustomPlayFromBoard({
+      basePlay: selectedPlay,
+      name: trimmedName,
+      description,
+      players: isEditMode ? editedPlayers : selectedPlay.initialPlayers,
+      positions: courtPositions,
+      ballCarrierId: isEditMode ? ballCarrierId : activeStep?.ball?.carrierId ?? getBallHandler(selectedPlay).id,
+    })
+
+    addCustomPlay(customPlay)
+    reset()
+    resetForPlay(customPlay)
+    setSelectedPlayId(customPlay.id)
+    saveBoardState(createDefaultStateForPlay(customPlay))
+    showPlaybookMessage('Custom play saved')
+  }
+
+  const handleDuplicatePlay = () => {
+    const defaultName = `${selectedPlay.name} Copy`
+    const name = window.prompt('Name the duplicated play', defaultName)
+    if (!name) {
+      return
+    }
+
+    const trimmedName = name.trim()
+    if (!trimmedName) {
+      showPlaybookMessage('Invalid play name')
+      return
+    }
+
+    const customPlay = duplicatePlayAsCustom(selectedPlay, trimmedName)
+    addCustomPlay(customPlay)
+    reset()
+    resetForPlay(customPlay)
+    setSelectedPlayId(customPlay.id)
+    saveBoardState(createDefaultStateForPlay(customPlay))
+    showPlaybookMessage('Play duplicated')
+  }
+
+  const handleDeleteCustomPlay = () => {
+    if (!selectedPlayIsCustom) {
+      showPlaybookMessage('Cannot delete built-in play')
+      return
+    }
+
+    const confirmed = window.confirm('Delete this custom play?')
+    if (!confirmed) {
+      return
+    }
+
+    deleteCustomPlay(selectedPlay.id)
+    reset()
+    resetForPlay(defaultPlay)
+    setSelectedPlayId(defaultPlay.id)
+    saveBoardState(createDefaultStateForPlay(defaultPlay))
+    showPlaybookMessage('Custom play deleted')
   }
 
   const handleReset = () => {
@@ -198,6 +288,7 @@ function App() {
       canAddDefense={canAddDefense}
       canAddOffense={canAddOffense}
       canClearBoard={canClearBoard}
+      canDeleteCustomPlay={selectedPlayIsCustom}
       clearBoardLabel={clearBoardLabel}
       isPlaying={isPlaying}
       isEditMode={isEditMode}
@@ -205,16 +296,20 @@ function App() {
       onAddOffense={() => addPlayer('offense')}
       onAssignBall={assignBallToSelected}
       onClearBoard={handleClearBoard}
+      onDeleteCustomPlay={handleDeleteCustomPlay}
+      onDuplicatePlay={handleDuplicatePlay}
       onNextStep={nextStep}
       onPlayFullSequence={playFullSequence}
       onPreviousStep={previousStep}
       onReset={handleReset}
       onRemoveSelectedPlayer={removeSelectedPlayer}
       onResetToPlayDefaults={handleResetToPlayDefaults}
+      onSaveAsCustomPlay={handleSaveAsCustomPlay}
       onSaveBoard={handleSaveBoard}
       onStepSelect={goToStep}
       onToggleEditMode={toggleEditMode}
       onToggleTheme={toggleTheme}
+      playbookMessage={playbookMessage}
       saveStatus={saveStatus}
       selectedPlayer={selectedPlayer}
       stepCount={selectedPlay.steps.length}
@@ -247,7 +342,7 @@ function App() {
           onAssignBall={assignBallToSelected}
           onSelectPlay={handleSelectPlay}
           play={selectedPlay}
-          plays={plays}
+          plays={allPlays}
           selectedPlayer={selectedPlayer}
         />
       </motion.div>

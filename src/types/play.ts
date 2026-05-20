@@ -45,4 +45,10 @@ export type Play = {
   concepts: string[]
   initialPlayers: Player[]
   steps: PlayStep[]
+  source?: 'built-in' | 'custom'
+  createdAt?: string
+  updatedAt?: string
+  isCustom?: boolean
+  basePlayId?: string
+  userDescription?: string
 }

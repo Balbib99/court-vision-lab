@@ -1,4 +1,4 @@
-import { Check, Moon, RotateCcw, Save, Search, Settings, Share2, Sun, Trash2 } from 'lucide-react'
+import { Check, Copy, FilePlus2, Moon, RotateCcw, Save, Search, Settings, Share2, Sun, Trash2 } from 'lucide-react'
 import type { Theme } from '../../hooks/useTheme'
 import type { Play } from '../../types/play'
 
@@ -7,10 +7,15 @@ export type BoardSaveStatus = 'idle' | 'saved' | 'unsaved' | 'autosaved'
 type TopBarProps = {
   activePlay: Play
   canClearBoard: boolean
+  canDeleteCustomPlay: boolean
   clearBoardLabel: string
+  onDeleteCustomPlay: () => void
+  onDuplicatePlay: () => void
   onClearBoard: () => void
   onResetToPlayDefaults: () => void
+  onSaveAsCustomPlay: () => void
   onSaveBoard: () => void
+  playbookMessage?: string
   theme: Theme
   saveStatus?: BoardSaveStatus
   onToggleTheme: () => void
@@ -19,22 +24,51 @@ type TopBarProps = {
 export function TopBar({
   activePlay,
   canClearBoard,
+  canDeleteCustomPlay,
   clearBoardLabel,
   onClearBoard,
+  onDeleteCustomPlay,
+  onDuplicatePlay,
   onResetToPlayDefaults,
+  onSaveAsCustomPlay,
   onSaveBoard,
+  playbookMessage,
   saveStatus = 'idle',
   theme,
   onToggleTheme,
 }: TopBarProps) {
-  const saveStatusLabel = {
+  const statusLabel = playbookMessage || {
     idle: '',
     saved: 'Saved',
     unsaved: 'Unsaved changes',
     autosaved: 'Auto-saved',
   }[saveStatus]
 
-  const managementActions = [
+  const playbookActions = [
+    {
+      label: 'Save as custom play',
+      icon: FilePlus2,
+      onClick: onSaveAsCustomPlay,
+      disabled: false,
+      className: 'text-muted hover:bg-[var(--accent-muted)]',
+    },
+    {
+      label: 'Duplicate play',
+      icon: Copy,
+      onClick: onDuplicatePlay,
+      disabled: false,
+      className: 'text-muted hover:bg-[var(--accent-muted)]',
+    },
+    {
+      label: canDeleteCustomPlay ? 'Delete custom play' : 'Built-in plays cannot be deleted',
+      icon: Trash2,
+      onClick: onDeleteCustomPlay,
+      disabled: !canDeleteCustomPlay,
+      className: 'text-[var(--defense)] hover:bg-[var(--accent-muted)]',
+    },
+  ]
+
+  const boardActions = [
     {
       label: saveStatus === 'saved' || saveStatus === 'autosaved' ? 'Board saved' : 'Save Board',
       icon: saveStatus === 'saved' ? Check : Save,
@@ -82,12 +116,29 @@ export function TopBar({
             />
           </label>
           <div className="flex items-center gap-2">
-            {saveStatusLabel && (
+            {statusLabel && (
               <span className="panel rounded-md border px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--text-muted)]">
-                {saveStatusLabel}
+                {statusLabel}
               </span>
             )}
-            {managementActions.map(({ className, disabled, icon: Icon, label, onClick }) => (
+            {playbookActions.map(({ className, disabled, icon: Icon, label, onClick }) => (
+              <button
+                key={label}
+                type="button"
+                onClick={onClick}
+                disabled={disabled}
+                className={[
+                  'flex h-10 w-10 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-40',
+                  className,
+                ].join(' ')}
+                aria-label={label}
+                title={label}
+              >
+                <Icon size={21} aria-hidden="true" />
+              </button>
+            ))}
+            <div className="tactical-border h-8 w-px border-l" />
+            {boardActions.map(({ className, disabled, icon: Icon, label, onClick }) => (
               <button
                 key={label}
                 type="button"
@@ -122,12 +173,12 @@ export function TopBar({
         </div>
         <button
           type="button"
-          onClick={onSaveBoard}
+          onClick={onSaveAsCustomPlay}
           className="panel-floating flex h-10 w-10 items-center justify-center rounded-md border text-[var(--accent)] transition hover:bg-[var(--accent-muted)] lg:hidden"
-          aria-label={saveStatus === 'saved' || saveStatus === 'autosaved' ? 'Board saved' : 'Save Board'}
-          title={saveStatus === 'saved' || saveStatus === 'autosaved' ? 'Board saved' : 'Save Board'}
+          aria-label="Save as custom play"
+          title="Save as custom play"
         >
-          {saveStatus === 'saved' ? <Check size={19} aria-hidden="true" /> : <Save size={19} aria-hidden="true" />}
+          <FilePlus2 size={19} aria-hidden="true" />
         </button>
         <button
           type="button"

@@ -38,9 +38,16 @@ export function PlayDetailsPanel({
             <p className="accent-text font-mono text-[11px] uppercase tracking-[0.16em]">{play.category}</p>
             <h2 className="text-main mt-1 font-display text-2xl tracking-[0.05em]">{play.name}</h2>
           </div>
-          <span className="accent-badge rounded-sm px-2 py-1 font-mono text-[11px] font-bold">
-            {play.difficulty}
-          </span>
+          <div className="flex flex-col items-end gap-2">
+            {(play.source === 'custom' || play.isCustom) && (
+              <span className="panel rounded-sm border px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--text-muted)]">
+                Custom
+              </span>
+            )}
+            <span className="accent-badge rounded-sm px-2 py-1 font-mono text-[11px] font-bold">
+              {play.difficulty}
+            </span>
+          </div>
         </div>
         <p className="play-description text-muted mt-4 text-sm leading-6">{play.description}</p>
       </div>
