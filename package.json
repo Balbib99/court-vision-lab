@@ -2,6 +2,7 @@
   "name": "court-vision-lab",
   "private": true,
   "version": "0.0.0",
+  "description": "Interactive basketball tactics board built with React, TypeScript, Tailwind CSS and Framer Motion.",
   "type": "module",
   "scripts": {
     "dev": "vite",

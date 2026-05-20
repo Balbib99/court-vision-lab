@@ -7,17 +7,19 @@ type TopBarProps = {
 
 export function TopBar({ activePlay }: TopBarProps) {
   return (
-    <header className="sticky top-0 z-50 flex h-20 items-center justify-between border-b border-[#584237]/35 bg-[#1c1b1d]/95 px-4 backdrop-blur-xl md:px-8">
-      <div className="flex min-w-0 items-center gap-5">
-        <h1 className="font-display text-2xl tracking-[0.08em] text-orange-500 md:text-3xl">COURT VISION</h1>
-        <div className="hidden h-8 w-px bg-[#584237]/60 sm:block" />
-        <div className="min-w-0">
-          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[#e0c0b1]">Active Play</p>
-          <p className="truncate text-sm font-bold text-[#e5e1e4] md:text-base">{activePlay.name}</p>
+    <header className="topbar sticky top-0 z-50 flex h-20 items-center justify-between border-b border-[#584237]/35 bg-[#1c1b1d]/95 px-4 backdrop-blur-xl md:px-8">
+      <div className="flex min-w-0 items-center gap-3 sm:gap-5">
+        <h1 className="topbar-brand shrink-0 font-display text-xl tracking-[0.08em] text-orange-500 sm:text-2xl md:text-3xl">
+          COURT VISION<span className="hidden sm:inline"> LAB</span>
+        </h1>
+        <div className="topbar-divider hidden h-8 w-px bg-[#584237]/60 sm:block" />
+        <div className="topbar-play min-w-0">
+          <p className="topbar-eyebrow font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[#e0c0b1]">Active Play</p>
+          <p className="topbar-play-name truncate text-sm font-bold text-[#e5e1e4] md:text-base">{activePlay.name}</p>
         </div>
       </div>
 
-      <div className="hidden items-center gap-4 lg:flex">
+      <div className="topbar-actions hidden items-center gap-4 lg:flex">
         <label className="flex h-12 w-80 items-center gap-3 rounded-md border border-[#584237]/45 bg-[#2a2a2c] px-4 text-[#e0c0b1]">
           <Search size={19} aria-hidden="true" />
           <input

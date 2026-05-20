@@ -11,7 +11,7 @@ export function BallMarker({ position }: BallMarkerProps) {
 
   return (
     <motion.div
-      className="absolute z-40 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#ffdf9a] bg-[#e4ae00] shadow-[0_0_18px_rgba(249,115,22,0.4),inset_0_2px_3px_rgba(255,255,255,0.25)]"
+      className="absolute z-40 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#ffdf9a] bg-[#e4ae00] shadow-[0_0_18px_rgba(249,115,22,0.4),inset_0_2px_3px_rgba(255,255,255,0.25)] sm:h-5 sm:w-5 md:h-6 md:w-6"
       style={markerStyle}
       animate={markerStyle}
       transition={{ type: 'spring', stiffness: 120, damping: 17 }}

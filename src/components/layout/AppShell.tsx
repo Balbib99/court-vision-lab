@@ -27,13 +27,13 @@ export function AppShell({
   stepCount,
 }: AppShellProps) {
   return (
-    <div className="min-h-screen overflow-hidden bg-[#0e0e10] text-[#e5e1e4]">
+    <div className="app-shell min-h-dvh bg-[#0e0e10] text-[#e5e1e4] xl:overflow-hidden">
       <TopBar activePlay={activePlay} />
-      <div className="flex min-h-[calc(100vh-80px)]">
+      <div className="app-body flex min-h-[calc(100dvh-80px)]">
         <Sidebar />
-        <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
-          <div className="relative min-h-0 flex-1">{children}</div>
-          <div className="pointer-events-none absolute inset-x-4 bottom-5 z-40 md:left-24 md:right-8">
+        <main className="app-main relative flex min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto xl:overflow-hidden">
+          <div className="app-content relative min-h-0 flex-1 pb-32 xl:pb-0">{children}</div>
+          <div className="bottom-controls-wrap pointer-events-none fixed inset-x-4 bottom-4 z-40 md:left-24 md:right-8 xl:absolute xl:bottom-5">
             <div className="pointer-events-auto">
               <BottomControls
                 activeStep={activeStep}

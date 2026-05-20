@@ -22,8 +22,18 @@ export const usePlayAnimation = (play: Play) => {
 
   const playAnimation = useCallback(() => {
     clearTimer()
-    setIsPlaying((current) => !current)
-  }, [clearTimer])
+    setIsPlaying((current) => {
+      if (current) {
+        return false
+      }
+
+      if (activeStepIndex >= play.steps.length - 1) {
+        setActiveStepIndex(0)
+      }
+
+      return true
+    })
+  }, [activeStepIndex, clearTimer, play.steps.length])
 
   const goToStep = useCallback(
     (stepIndex: number) => {
@@ -41,7 +51,6 @@ export const usePlayAnimation = (play: Play) => {
 
     const step = play.steps[activeStepIndex]
     if (!step) {
-      setIsPlaying(false)
       return
     }
 
@@ -56,8 +65,6 @@ export const usePlayAnimation = (play: Play) => {
 
     return clearTimer
   }, [activeStepIndex, clearTimer, isPlaying, play.steps])
-
-  useEffect(() => reset(), [play.id, reset])
 
   const positions = useMemo(
     () => getStepPositions(play, activeStepIndex),

@@ -15,6 +15,11 @@ function App() {
   const { activeStep, activeStepIndex, ballPosition, isPlaying, playAnimation, positions, reset } =
     usePlayAnimation(selectedPlay)
 
+  const handleSelectPlay = (playId: string) => {
+    reset()
+    setSelectedPlayId(playId)
+  }
+
   return (
     <AppShell
       activePlay={selectedPlay}
@@ -41,7 +46,7 @@ function App() {
         <PlayDetailsPanel
           activeStep={activeStep}
           activeStepIndex={activeStepIndex}
-          onSelectPlay={setSelectedPlayId}
+          onSelectPlay={handleSelectPlay}
           play={selectedPlay}
           plays={plays}
         />

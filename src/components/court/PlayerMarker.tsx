@@ -14,7 +14,7 @@ export function PlayerMarker({ player, position, isBallHandler = false }: Player
 
   return (
     <motion.div
-      className="absolute z-30 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 font-mono text-[13px] font-black shadow-[0_14px_22px_rgba(0,0,0,0.45),inset_0_2px_4px_rgba(255,255,255,0.12)] md:h-12 md:w-12 md:text-sm"
+      className="absolute z-30 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 font-mono text-[11px] font-black shadow-[0_14px_22px_rgba(0,0,0,0.45),inset_0_2px_4px_rgba(255,255,255,0.12)] sm:h-10 sm:w-10 sm:text-xs md:h-12 md:w-12 md:text-sm"
       style={markerStyle}
       animate={markerStyle}
       transition={{ type: 'spring', stiffness: 92, damping: 18, mass: 0.85 }}

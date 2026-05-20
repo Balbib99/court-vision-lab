@@ -1,73 +1,133 @@
-# React + TypeScript + Vite
+# Court Vision Lab
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Court Vision Lab is an interactive basketball tactics board built with React and TypeScript. It allows users to visualize and replay offensive plays through animated player movement, tactical panels and a polished dark interface.
 
-Currently, two official plugins are available:
+## Preview / Demo
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The current MVP is designed as a frontend-only tactical dashboard. It includes a full-court 2D board, animated player markers, a visible ball marker, playback controls and a tactical details panel.
 
-## React Compiler
+Deployment target: Vercel.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Features
 
-## Expanding the ESLint configuration
+- Interactive 2D basketball court
+- Animated player movement
+- Predefined Pick and Roll play
+- Offensive and defensive player markers
+- Ball marker
+- Tactical details panel
+- Playback controls
+- Responsive tactical dashboard UI
+- Built with reusable TypeScript data models
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Tech Stack
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- Framer Motion
+- Lucide React
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Project Goals
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+The goal of Court Vision Lab is to present a portfolio-quality frontend application that feels like a real tactical tool for coaches, analysts and basketball creators. The MVP focuses on clean interaction, polished visual design and a data model that can later support a play editor, persistence, export features and a 3D court view.
+
+## Current MVP Status
+
+The MVP currently supports selecting a predefined play, replaying animated player movement, resetting the sequence and reading tactical context for each play. The play data is separated from the rendering layer so it can be reused by future 2D, 3D or editor experiences.
+
+Included plays:
+
+- Pick and Roll
+- Horns
+- Fast Break
+
+## Roadmap
+
+- Add more plays: Horns, Fast Break, Spain Pick and Roll
+- Add play timeline
+- Add drag-and-drop player editing
+- Add custom play creation
+- Add localStorage persistence
+- Add export as image
+- Add optional 3D court view with Three.js / React Three Fiber
+
+## Installation
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Run Locally
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+## Build
+
+```bash
+npm run build
+```
+
+## Preview Production Build
+
+```bash
+npm run preview
+```
+
+## Folder Structure
+
+```text
+src/
+  components/
+    court/
+      Court.tsx
+      CourtLines.tsx
+      CourtGrid.tsx
+      PlayerMarker.tsx
+      BallMarker.tsx
+      MovementPath.tsx
+    layout/
+      AppShell.tsx
+      TopBar.tsx
+      Sidebar.tsx
+      RightToolbar.tsx
+      BottomControls.tsx
+    plays/
+      PlaySelector.tsx
+      PlayDetailsPanel.tsx
+  data/
+    plays.ts
+  hooks/
+    usePlayAnimation.ts
+  types/
+    play.ts
+  utils/
+    positions.ts
+  App.tsx
+  main.tsx
+  index.css
+```
+
+## What I Learned
+
+- Designing a reusable TypeScript model for tactical play data.
+- Keeping animation state separate from rendering components.
+- Building a dashboard-style interface with Tailwind CSS.
+- Using Framer Motion for clear, controlled player movement.
+- Structuring a frontend MVP so future features can be added without rewriting the core logic.
+
+## Future Improvements
+
+- Add a richer play timeline with manual step navigation.
+- Add editable player positions with drag-and-drop.
+- Store custom plays in localStorage.
+- Export play diagrams as images.
+- Add keyboard shortcuts for playback.
+- Add a future 3D court mode with Three.js or React Three Fiber.
+
+## Author
+
+Built by Balbi as a portfolio project.
