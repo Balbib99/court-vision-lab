@@ -14,7 +14,7 @@ export function MovementPath({ fromPositions, step }: MovementPathProps) {
     <svg className="pointer-events-none absolute inset-0 z-20 h-full w-full" viewBox="0 0 100 56.25" preserveAspectRatio="none">
       <defs>
         <marker id="path-arrow" viewBox="0 0 8 8" refX="6.2" refY="4" markerWidth="4" markerHeight="4" orient="auto">
-          <path d="M0 0 L8 4 L0 8 Z" fill="rgba(249,115,22,0.72)" />
+          <path d="M0 0 L8 4 L0 8 Z" fill="var(--accent)" opacity="0.72" />
         </marker>
       </defs>
       {step.movements.map((movement) => {
@@ -30,7 +30,8 @@ export function MovementPath({ fromPositions, step }: MovementPathProps) {
             y1={from.y}
             x2={movement.to.x}
             y2={movement.to.y}
-            stroke="rgba(249,115,22,0.45)"
+            stroke="var(--accent)"
+            strokeOpacity="0.48"
             strokeDasharray="1.8 1.8"
             strokeLinecap="round"
             strokeWidth="0.42"

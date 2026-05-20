@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Court Vision | Analytics Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(29, 32, 34, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .court-grid {
+            background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+        .heat-map-cell {
+            transition: all 0.3s ease;
+        }
+        .heat-map-cell:hover {
+            filter: brightness(1.2);
+            transform: scale(1.05);
+            z-index: 10;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-container": "#798098",
+                      "surface-container-lowest": "#0b0f10",
+                      "secondary": "#ffb3ad",
+                      "on-tertiary-fixed": "#001a42",
+                      "error-container": "#93000a",
+                      "inverse-surface": "#e0e3e5",
+                      "surface-container-high": "#272a2c",
+                      "on-surface": "#e0e3e5",
+                      "on-background": "#e0e3e5",
+                      "secondary-fixed-dim": "#ffb3ad",
+                      "tertiary": "#adc6ff",
+                      "on-primary-fixed": "#131b2e",
+                      "outline-variant": "#45464d",
+                      "surface-container-highest": "#323537",
+                      "surface-container-low": "#191c1e",
+                      "primary-fixed-dim": "#bec6e0",
+                      "surface-bright": "#363a3b",
+                      "secondary-container": "#a40217",
+                      "background": "#101415",
+                      "tertiary-fixed-dim": "#adc6ff",
+                      "error": "#ffb4ab",
+                      "surface-dim": "#101415",
+                      "on-primary": "#283044",
+                      "surface-variant": "#323537",
+                      "on-secondary-fixed-variant": "#930013",
+                      "surface-tint": "#bec6e0",
+                      "tertiary-container": "#00163a",
+                      "on-primary-fixed-variant": "#3f465c",
+                      "on-secondary": "#68000a",
+                      "on-tertiary": "#002e6a",
+                      "on-secondary-fixed": "#410004",
+                      "surface": "#101415",
+                      "surface-container": "#1d2022",
+                      "inverse-on-surface": "#2d3133",
+                      "on-error": "#690005",
+                      "on-error-container": "#ffdad6",
+                      "primary-fixed": "#dae2fd",
+                      "on-tertiary-fixed-variant": "#004395",
+                      "tertiary-fixed": "#d8e2ff",
+                      "primary-container": "#0f172a",
+                      "inverse-primary": "#565e74",
+                      "on-tertiary-container": "#357df1",
+                      "secondary-fixed": "#ffdad7",
+                      "on-secondary-container": "#ffaea8",
+                      "outline": "#909097",
+                      "on-surface-variant": "#c6c6cd",
+                      "primary": "#bec6e0"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-desktop": "32px",
+                      "baseline": "4px",
+                      "toolbar-height": "64px",
+                      "margin-mobile": "16px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "player-number": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "headline-md-mobile": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "label-uppercase": ["Inter"],
+                      "display-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "player-number": ["18px", {"lineHeight": "18px", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "headline-md-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "700"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "label-uppercase": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-lg overflow-x-hidden">
+<!-- Sidebar Navigation -->
+<aside class="h-screen w-toolbar-height fixed left-0 top-0 bg-surface-container/60 backdrop-blur-2xl border-r border-white/5 shadow-2xl z-[60] flex flex-col h-full py-4 space-y-4 hidden md:flex">
+<div class="flex flex-col items-center mb-8">
+<div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-on-primary font-black mb-2">
+<span class="material-symbols-outlined">sports_basketball</span>
+</div>
+<div class="text-[10px] font-bold text-center text-on-surface opacity-50 uppercase tracking-widest">W.E.</div>
+</div>
+<nav class="flex-1 space-y-2">
+<button class="w-full text-on-surface-variant hover:text-on-surface flex flex-col items-center justify-center py-3 hover:bg-surface-container-highest/50 transition-all">
+<span class="material-symbols-outlined" data-icon="strategy">strategy</span>
+</button>
+<button class="w-full text-on-surface-variant hover:text-on-surface flex flex-col items-center justify-center py-3 hover:bg-surface-container-highest/50 transition-all">
+<span class="material-symbols-outlined" data-icon="folder_special">folder_special</span>
+</button>
+<button class="w-full text-on-surface-variant hover:text-on-surface flex flex-col items-center justify-center py-3 hover:bg-surface-container-highest/50 transition-all">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+</button>
+<!-- Active State -->
+<button class="bg-primary-container text-on-primary-container rounded-xl mx-2 my-1 flex flex-col items-center justify-center py-3 translate-x-1 duration-200">
+<span class="material-symbols-outlined" data-icon="query_stats" style="font-variation-settings: 'FILL' 1;">query_stats</span>
+</button>
+<button class="w-full text-on-surface-variant hover:text-on-surface flex flex-col items-center justify-center py-3 hover:bg-surface-container-highest/50 transition-all">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</nav>
+<div class="mt-auto px-2">
+<img alt="Coach profile avatar" class="w-10 h-10 rounded-full border border-primary/20" data-alt="A professional headshot of a basketball coach in their 40s, looking focused and determined. The background is a blurred stadium interior with cool blue and slate grey tones. The lighting is crisp and professional, highlighting a sophisticated, high-stakes athletic management atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFgbKb9xuDLRaKAaCK7l2dN3l5U_QmVg9ddna6q3XmUB-ATWynzj-Aw4fSZi5YflI-Ec_JXsXp_UUezW9WgO-0bFUezZgGgxCiFk5V8r3LVuy6Pz9DYutnWuxnb4gVHSBAOcNQQQesp0zrLITl13rZprDPtapQ8z703IMKjuYfswpAYrfWI6vRK_mw1Avjxlb0f9berhX2b4fVeYR7OJ_sCOxx2FIYe5qV8UJL-2Hffml0XNEzPuTEkPNnsTY4AURIkoOga-mTi6s"/>
+</div>
+</aside>
+<!-- Top AppBar -->
+<header class="bg-surface/80 backdrop-blur-xl border-b border-white/10 docked full-width top-0 sticky z-50 flex justify-between items-center w-full px-margin-desktop h-toolbar-height md:pl-[96px]">
+<div class="flex items-center gap-4">
+<h1 class="text-headline-md font-headline-md font-extrabold tracking-tighter text-on-surface">COURT VISION</h1>
+<span class="px-2 py-0.5 bg-surface-container-high rounded text-[10px] font-bold text-primary border border-primary/20">ANALYTICS</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden lg:flex items-center gap-2 bg-surface-container-low px-4 py-1.5 rounded-full border border-white/5">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">calendar_today</span>
+<span class="text-body-sm font-medium text-on-surface-variant">2023/24 Regular Season</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-white/5 transition-colors rounded-full">
+<span class="material-symbols-outlined">save</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-white/5 transition-colors rounded-full">
+<span class="material-symbols-outlined">share</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-white/5 transition-colors rounded-full">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="md:pl-[96px] p-6 lg:p-margin-desktop min-h-screen">
+<!-- Bento Summary Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+<div class="glass-panel p-5 rounded-xl flex flex-col justify-between">
+<div>
+<span class="text-label-uppercase font-label-uppercase text-on-surface-variant">Win/Loss Ratio</span>
+<h3 class="text-display-lg font-display-lg text-primary mt-1">78.4<span class="text-headline-md">%</span></h3>
+</div>
+<div class="flex items-center gap-2 mt-4 text-green-400">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span class="text-body-sm font-bold">+2.1% vs Last Season</span>
+</div>
+</div>
+<div class="glass-panel p-5 rounded-xl flex flex-col justify-between">
+<div>
+<span class="text-label-uppercase font-label-uppercase text-on-surface-variant">Points Per Possession</span>
+<h3 class="text-display-lg font-display-lg text-on-surface mt-1">1.14</h3>
+</div>
+<div class="flex items-center gap-2 mt-4 text-primary">
+<span class="material-symbols-outlined text-sm">info</span>
+<span class="text-body-sm font-bold">Elite Efficiency Range</span>
+</div>
+</div>
+<div class="glass-panel p-5 rounded-xl flex flex-col justify-between lg:col-span-2 overflow-hidden relative">
+<div class="relative z-10">
+<span class="text-label-uppercase font-label-uppercase text-on-surface-variant">Team Trend</span>
+<div class="flex gap-4 mt-2">
+<div class="flex flex-col">
+<span class="text-headline-md font-headline-md">118.2</span>
+<span class="text-[10px] text-on-surface-variant uppercase">Offensive RTG</span>
+</div>
+<div class="w-[1px] bg-white/10"></div>
+<div class="flex flex-col">
+<span class="text-headline-md font-headline-md text-secondary">104.5</span>
+<span class="text-[10px] text-on-surface-variant uppercase">Defensive RTG</span>
+</div>
+</div>
+</div>
+<!-- Visual Trend Mockup -->
+<div class="absolute bottom-0 right-0 left-0 h-16 opacity-30 flex items-end">
+<div class="w-full h-full flex items-end px-4 gap-1">
+<div class="flex-1 bg-primary rounded-t-sm" style="height: 40%"></div>
+<div class="flex-1 bg-primary rounded-t-sm" style="height: 60%"></div>
+<div class="flex-1 bg-primary rounded-t-sm" style="height: 55%"></div>
+<div class="flex-1 bg-primary rounded-t-sm" style="height: 80%"></div>
+<div class="flex-1 bg-primary rounded-t-sm" style="height: 95%"></div>
+<div class="flex-1 bg-primary rounded-t-sm" style="height: 70%"></div>
+<div class="flex-1 bg-primary rounded-t-sm" style="height: 85%"></div>
+<div class="flex-1 bg-primary rounded-t-sm" style="height: 60%"></div>
+<div class="flex-1 bg-primary rounded-t-sm" style="height: 40%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Analytics Dashboard Content -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Shot Chart Section (Heatmap) -->
+<section class="lg:col-span-8 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">local_fire_department</span>
+                        Shot Efficiency Heatmap
+                    </h2>
+<div class="flex gap-2">
+<button class="px-4 py-1.5 rounded-lg bg-surface-container-high text-body-sm font-bold border border-white/5">Full Team</button>
+<button class="px-4 py-1.5 rounded-lg bg-primary-container text-on-primary-container text-body-sm font-bold border border-primary/20">Starting Five</button>
+</div>
+</div>
+<div class="glass-panel aspect-[16/9] rounded-2xl relative overflow-hidden flex items-center justify-center court-grid group">
+<!-- Basketball Half-Court Lines -->
+<div class="absolute inset-0 border-2 border-white/10 m-8 rounded-b-full"></div>
+<div class="absolute top-8 left-1/2 -translate-x-1/2 w-48 h-64 border-2 border-white/10"></div> <!-- Key -->
+<div class="absolute top-[340px] left-1/2 -translate-x-1/2 w-32 h-32 border-2 border-white/10 rounded-full"></div> <!-- Free throw circle -->
+<div class="absolute top-8 left-1/2 -translate-x-1/2 w-full h-[600px] border-2 border-white/10 rounded-b-full scale-x-90"></div> <!-- 3PT Line -->
+<!-- Heatmap Grid Overlay -->
+<div class="absolute inset-0 grid grid-cols-12 grid-rows-8 gap-1 p-8 opacity-60">
+<!-- Simulated heatmap blobs -->
+<div class="col-start-6 col-span-2 row-start-2 bg-secondary/80 blur-xl"></div>
+<div class="col-start-3 col-span-2 row-start-3 bg-primary/40 blur-lg"></div>
+<div class="col-start-10 col-span-2 row-start-3 bg-primary/60 blur-lg"></div>
+<div class="col-start-6 col-span-2 row-start-5 bg-secondary/20 blur-xl"></div>
+</div>
+<!-- Tactical Data Points -->
+<div class="relative w-full h-full p-12 grid grid-cols-10 grid-rows-6">
+<!-- Scoring hotspots with interactive tooltips would go here -->
+<div class="col-start-5 row-start-2 flex items-center justify-center">
+<div class="w-8 h-8 rounded-full bg-secondary shadow-[0_0_20px_#ffb3ad] flex items-center justify-center heat-map-cell cursor-pointer">
+<span class="text-[10px] font-bold text-on-secondary">64%</span>
+</div>
+</div>
+<div class="col-start-2 row-start-3 flex items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-primary/80 flex items-center justify-center heat-map-cell cursor-pointer">
+<span class="text-[10px] font-bold text-on-primary">42%</span>
+</div>
+</div>
+<div class="col-start-9 row-start-3 flex items-center justify-center">
+<div class="w-7 h-7 rounded-full bg-primary/90 flex items-center justify-center heat-map-cell cursor-pointer">
+<span class="text-[10px] font-bold text-on-primary">48%</span>
+</div>
+</div>
+</div>
+<!-- Legend Overlay -->
+<div class="absolute bottom-6 right-6 flex items-center gap-4 glass-panel px-4 py-2 rounded-lg border border-white/5">
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Efficiency</span>
+<div class="flex h-2 w-24 rounded-full bg-gradient-to-r from-primary/20 via-primary to-secondary"></div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">High</span>
+</div>
+</div>
+</section>
+<!-- Player Efficiency Column -->
+<section class="lg:col-span-4 flex flex-col gap-4">
+<h2 class="font-headline-md text-headline-md text-on-surface">Player Efficiency</h2>
+<div class="space-y-3">
+<!-- Player Card 1 -->
+<div class="glass-panel p-4 rounded-xl flex items-center gap-4 group hover:bg-white/5 transition-all">
+<div class="relative">
+<img alt="Player avatar" class="w-12 h-12 rounded-full border-2 border-secondary" data-alt="A focused professional basketball player during a game, sweat glistening under arena lights. The player is wearing a dark navy team jersey. The photo has a high-contrast, moody aesthetic typical of sports photography, with dramatic highlights and deep shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhHLU3JF7b2GjniCtxkDwvxrhWyNFOhecFpr1005oABRw42ZLCVLI3wtnrPus41bFb3Nm4IyGgQBHSABuqrD8ULvpKr4l0wRQ80zQz6lTMEL17vqY7L1Y0aOAyF6czdm6Z3bBhN0MudJ3HX3WeUrP8JGdAQuMRZigZW11aQsPJNIBkCfi3fG97O8Ut00CLybDpzwDwvHUEFqLi08rKTYV-cZmqwcTFJ6ilUfBQRn_kmw0PojOJQmdEkM-jkBxJSUdrP6P6vI0QK2I"/>
+<div class="absolute -bottom-1 -right-1 bg-secondary text-on-secondary text-[8px] font-bold px-1 rounded">PG</div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<span class="font-bold text-on-surface">Stephen Curry</span>
+<span class="text-secondary font-player-number text-player-number">28.4</span>
+</div>
+<div class="w-full h-1.5 bg-white/5 rounded-full mt-2 overflow-hidden">
+<div class="h-full bg-secondary w-[92%]"></div>
+</div>
+</div>
+</div>
+<!-- Player Card 2 -->
+<div class="glass-panel p-4 rounded-xl flex items-center gap-4 group hover:bg-white/5 transition-all">
+<div class="relative">
+<img alt="Player avatar" class="w-12 h-12 rounded-full border-2 border-primary" data-alt="Close-up of a basketball player's face, intense concentration evident as they prepare for a play. Studio lighting creates sharp definitions on the face, with cool stadium colors in the background. The mood is one of extreme focus and tactical readiness." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDNMwaSiQYRumxCumuYpqAOCSnn1jFUmW_ioRaoKE0LdZASCVoFFFGw04CvsN7A6_lIdEFF2WkgSOdxJrUlFdqxLK9egrIzk6MpbLSnP-jQPp0PgseQqNn_Soihtxq95pVnFm2m7vdOV6bCdAle-sW0OgjQU1If4kn8eFtCxulb_OhlBuRU4hRTrHDsSfFasmUU5MH569WLf5vuETAjJd21hYQ05kyJQH0k8ZcOUQ750U5vWNzp69wZQzeKUY6OKSQ6ORPtQVqu50"/>
+<div class="absolute -bottom-1 -right-1 bg-primary text-on-primary text-[8px] font-bold px-1 rounded">SF</div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<span class="font-bold text-on-surface">Klay Thompson</span>
+<span class="text-primary font-player-number text-player-number">21.1</span>
+</div>
+<div class="w-full h-1.5 bg-white/5 rounded-full mt-2 overflow-hidden">
+<div class="h-full bg-primary w-[74%]"></div>
+</div>
+</div>
+</div>
+<!-- Player Card 3 -->
+<div class="glass-panel p-4 rounded-xl flex items-center gap-4 group hover:bg-white/5 transition-all">
+<div class="relative">
+<img alt="Player avatar" class="w-12 h-12 rounded-full border-2 border-primary" data-alt="A basketball forward mid-action, capturing a sense of power and speed. Professional sports lighting highlights the texture of the team uniform. The background is dark and moody, emphasizing the player's presence in a high-stakes professional basketball environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBglAbKggTEu19-lQaxbxlp1pNAFNKKA4Pa3G0LXokx9BAYhtPJVOmV3RN5SNvf4NGPRsUEIZ6R0-9fTOcweOUCvWHAnXeTurnuQ1bm02uMYmZDHKAteCLH0ODVRhwPz885aZuA-QjW5x8urGPeONoCRj0VDsQaStPdK1bzLY0QX9FU1VD_v_5KcKkQAgulQEOVTkntPlRrRSOSrkD1i29V_czNoDHtDw3MuQH8SaTjnoLZv59Pe-EJetGJ3Qemhm7z5GCDGcaP5Mg"/>
+<div class="absolute -bottom-1 -right-1 bg-primary text-on-primary text-[8px] font-bold px-1 rounded">PF</div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<span class="font-bold text-on-surface">Draymond Green</span>
+<span class="text-primary font-player-number text-player-number">15.8</span>
+</div>
+<div class="w-full h-1.5 bg-white/5 rounded-full mt-2 overflow-hidden">
+<div class="h-full bg-primary w-[62%]"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="glass-panel p-5 rounded-xl mt-4 flex-1">
+<h3 class="text-label-uppercase font-label-uppercase text-on-surface-variant mb-4">Metric Comparison</h3>
+<div class="space-y-4">
+<div class="flex items-center justify-between text-body-sm">
+<span class="text-on-surface-variant">Assist/Turnover Ratio</span>
+<span class="font-bold text-on-surface">2.84</span>
+</div>
+<div class="flex items-center justify-between text-body-sm">
+<span class="text-on-surface-variant">Rebound Rate</span>
+<span class="font-bold text-on-surface">54.2%</span>
+</div>
+<div class="flex items-center justify-between text-body-sm">
+<span class="text-on-surface-variant">True Shooting %</span>
+<span class="font-bold text-secondary">62.8%</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Footer / Transactional Suppression Logic Check (No Bottom Nav on Analytics usually, but keeping it for mobile layout) -->
+</main>
+<!-- Mobile Bottom NavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-surface-container-low/90 backdrop-blur-lg border-t border-outline-variant md:hidden">
+<button class="flex flex-col items-center justify-center text-on-surface-variant py-2">
+<span class="material-symbols-outlined" data-icon="edit_square">edit_square</span>
+<span class="text-[10px] font-bold uppercase tracking-wider mt-1">Board</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant py-2">
+<span class="material-symbols-outlined" data-icon="library_books">library_books</span>
+<span class="text-[10px] font-bold uppercase tracking-wider mt-1">Library</span>
+</button>
+<!-- Active -->
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-6 py-2 scale-90 duration-100">
+<span class="material-symbols-outlined" data-icon="badge" style="font-variation-settings: 'FILL' 1;">query_stats</span>
+<span class="text-[10px] font-bold uppercase tracking-wider mt-1">Stats</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant py-2">
+<span class="material-symbols-outlined" data-icon="tune">tune</span>
+<span class="text-[10px] font-bold uppercase tracking-wider mt-1">Settings</span>
+</button>
+</nav>
+<script>
+        // Micro-interaction for heatmap cells
+        document.querySelectorAll('.heat-map-cell').forEach(cell => {
+            cell.addEventListener('mouseenter', () => {
+                const ripples = 2;
+                for (let i = 0; i < ripples; i++) {
+                    const ripple = document.createElement('div');
+                    ripple.className = 'absolute w-full h-full border border-secondary rounded-full animate-ping';
+                    cell.appendChild(ripple);
+                    setTimeout(() => ripple.remove(), 1000);
+                }
+            });
+        });
+
+        // Atmospheric Court Glow
+        const canvas = document.createElement('div');
+        canvas.className = 'fixed inset-0 pointer-events-none z-[-1] opacity-20';
+        canvas.style.background = 'radial-gradient(circle at 80% 20%, #bec6e0 0%, transparent 40%), radial-gradient(circle at 20% 80%, #ffb3ad 0%, transparent 40%)';
+        document.body.appendChild(canvas);
+    </script>
+</body></html>

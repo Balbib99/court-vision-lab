@@ -8,6 +8,18 @@
       name="description"
       content="Court Vision Lab is an interactive basketball tactics board built with React and TypeScript."
     />
+    <script>
+      (() => {
+        const storedTheme = localStorage.getItem('court-vision-theme')
+        const theme =
+          storedTheme === 'dark' || storedTheme === 'light'
+            ? storedTheme
+            : window.matchMedia('(prefers-color-scheme: light)').matches
+              ? 'light'
+              : 'dark'
+        document.documentElement.dataset.theme = theme
+      })()
+    </script>
     <title>Court Vision Lab</title>
   </head>
   <body>

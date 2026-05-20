@@ -10,14 +10,14 @@ type PlaySelectorProps = {
 export function PlaySelector({ plays, selectedPlayId, onSelect }: PlaySelectorProps) {
   return (
     <label className="block">
-      <span className="mb-2 block font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[#e0c0b1]">
+      <span className="text-soft mb-2 block font-mono text-[11px] font-semibold uppercase tracking-[0.16em]">
         Playbook
       </span>
       <span className="relative block">
         <select
           value={selectedPlayId}
           onChange={(event) => onSelect(event.target.value)}
-          className="h-11 w-full appearance-none rounded-md border border-[#584237]/55 bg-[#131315] px-3 pr-10 text-sm font-bold text-[#e5e1e4] outline-none transition focus:border-orange-500"
+          className="panel h-11 w-full appearance-none rounded-md border px-3 pr-10 text-sm font-bold text-[var(--text-main)] outline-none transition focus:border-[var(--accent)]"
         >
           {plays.map((play) => (
             <option key={play.id} value={play.id}>
@@ -27,7 +27,7 @@ export function PlaySelector({ plays, selectedPlayId, onSelect }: PlaySelectorPr
         </select>
         <ChevronDown
           size={17}
-          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#e0c0b1]"
+          className="text-soft pointer-events-none absolute right-3 top-1/2 -translate-y-1/2"
           aria-hidden="true"
         />
       </span>

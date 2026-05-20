@@ -17,36 +17,36 @@ export function PlayDetailsPanel({
   plays,
 }: PlayDetailsPanelProps) {
   return (
-    <aside className="play-details-panel w-full border-t border-[#584237]/35 bg-[#1c1b1d]/95 p-4 pb-8 backdrop-blur-xl xl:absolute xl:left-6 xl:top-6 xl:z-30 xl:w-[340px] xl:border xl:pb-4 xl:shadow-[0_22px_50px_rgba(0,0,0,0.45)]">
+    <aside className="play-details-panel panel-glass w-full border-t p-4 pb-8 xl:absolute xl:left-6 xl:top-6 xl:z-30 xl:w-[340px] xl:border xl:pb-4">
       <div className="play-details-selector">
         <PlaySelector plays={plays} selectedPlayId={play.id} onSelect={onSelectPlay} />
       </div>
 
-      <div className="play-details-header mt-5 border-t border-[#584237]/35 pt-5">
+      <div className="play-details-header tactical-border mt-5 border-t pt-5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-orange-400">{play.category}</p>
-            <h2 className="mt-1 font-display text-2xl tracking-[0.05em] text-[#e5e1e4]">{play.name}</h2>
+            <p className="accent-text font-mono text-[11px] uppercase tracking-[0.16em]">{play.category}</p>
+            <h2 className="text-main mt-1 font-display text-2xl tracking-[0.05em]">{play.name}</h2>
           </div>
-          <span className="rounded-sm border border-orange-500/45 bg-orange-500/10 px-2 py-1 font-mono text-[11px] font-bold text-orange-300">
+          <span className="accent-bg-soft tactical-border-strong accent-text rounded-sm border px-2 py-1 font-mono text-[11px] font-bold">
             {play.difficulty}
           </span>
         </div>
-        <p className="play-description mt-4 text-sm leading-6 text-[#ccc5c1]">{play.description}</p>
+        <p className="play-description text-muted mt-4 text-sm leading-6">{play.description}</p>
       </div>
 
-      <div className="play-objective mt-5 border-t border-[#584237]/35 pt-5">
-        <h3 className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#e0c0b1]">Objective</h3>
-        <p className="mt-2 text-sm leading-6 text-[#ccc5c1]">{play.objective}</p>
+      <div className="play-objective tactical-border mt-5 border-t pt-5">
+        <h3 className="text-soft font-mono text-[11px] uppercase tracking-[0.16em]">Objective</h3>
+        <p className="text-muted mt-2 text-sm leading-6">{play.objective}</p>
       </div>
 
-      <div className="current-read mt-5 border-t border-[#584237]/35 pt-5">
-        <h3 className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#e0c0b1]">Current read</h3>
-        <p className="mt-2 text-sm font-bold text-[#e5e1e4]">{activeStep?.title}</p>
-        <p className="current-read-description mt-1 text-sm leading-6 text-[#ccc5c1]">{activeStep?.description}</p>
+      <div className="current-read tactical-border mt-5 border-t pt-5">
+        <h3 className="text-soft font-mono text-[11px] uppercase tracking-[0.16em]">Current read</h3>
+        <p className="text-main mt-2 text-sm font-bold">{activeStep?.title}</p>
+        <p className="current-read-description text-muted mt-1 text-sm leading-6">{activeStep?.description}</p>
       </div>
 
-      <ol className="play-steps mt-5 grid gap-2 border-t border-[#584237]/35 pt-5">
+      <ol className="play-steps tactical-border mt-5 grid gap-2 border-t pt-5">
         {play.steps.map((step, index) => {
           const isActive = index === activeStepIndex
           const isDone = index < activeStepIndex
@@ -57,14 +57,14 @@ export function PlayDetailsPanel({
               className={[
                 'border px-3 py-2 text-sm',
                 isActive
-                  ? 'border-orange-500/60 bg-orange-500/10'
+                  ? 'tactical-border-strong bg-[var(--accent-muted)]'
                   : isDone
-                    ? 'border-[#584237]/45 bg-[#2a2a2c]'
-                    : 'border-[#584237]/25 bg-[#131315]',
+                    ? 'tactical-border-strong bg-[var(--surface)]'
+                    : 'tactical-border bg-[var(--surface-strong)]',
               ].join(' ')}
             >
-              <span className="font-mono text-[11px] text-orange-300">{String(index + 1).padStart(2, '0')}</span>
-              <span className="ml-3 font-semibold text-[#e5e1e4]">{step.title}</span>
+              <span className="accent-text font-mono text-[11px]">{String(index + 1).padStart(2, '0')}</span>
+              <span className="text-main ml-3 font-semibold">{step.title}</span>
             </li>
           )
         })}
@@ -72,7 +72,7 @@ export function PlayDetailsPanel({
 
       <div className="play-concepts mt-5 flex flex-wrap gap-2">
         {play.concepts.map((concept) => (
-          <span key={concept} className="border-l-2 border-orange-500 bg-[#131315] px-2.5 py-1 font-mono text-[11px] uppercase tracking-wide text-[#e0c0b1]">
+          <span key={concept} className="accent-bg-soft accent-text border-l-2 border-[var(--accent)] px-2.5 py-1 font-mono text-[11px] uppercase tracking-wide">
             {concept}
           </span>
         ))}

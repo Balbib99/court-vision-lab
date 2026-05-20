@@ -3,7 +3,7 @@ import type { Play, Position } from '../types/play'
 import { getBallHandler, getStepPositions, resolveBallPosition } from '../utils/positions'
 
 export const usePlayAnimation = (play: Play) => {
-  const [activeStepIndex, setActiveStepIndex] = useState(0)
+  const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const timeoutRef = useRef<number | undefined>(undefined)
 
@@ -17,61 +17,70 @@ export const usePlayAnimation = (play: Play) => {
   const reset = useCallback(() => {
     clearTimer()
     setIsPlaying(false)
-    setActiveStepIndex(0)
+    setCurrentStepIndex(0)
   }, [clearTimer])
 
-  const playAnimation = useCallback(() => {
+  const goToStep = useCallback(
+    (stepIndex: number) => {
+      clearTimer()
+      setIsPlaying(false)
+      setCurrentStepIndex(Math.min(Math.max(stepIndex, 0), play.steps.length - 1))
+    },
+    [clearTimer, play.steps.length],
+  )
+
+  const nextStep = useCallback(() => {
+    clearTimer()
+    setIsPlaying(false)
+    setCurrentStepIndex((current) => Math.min(current + 1, play.steps.length - 1))
+  }, [clearTimer, play.steps.length])
+
+  const previousStep = useCallback(() => {
+    clearTimer()
+    setIsPlaying(false)
+    setCurrentStepIndex((current) => Math.max(current - 1, 0))
+  }, [clearTimer])
+
+  const playFullSequence = useCallback(() => {
     clearTimer()
     setIsPlaying((current) => {
       if (current) {
         return false
       }
 
-      if (activeStepIndex >= play.steps.length - 1) {
-        setActiveStepIndex(0)
-      }
-
+      setCurrentStepIndex((stepIndex) => (stepIndex >= play.steps.length - 1 ? 0 : stepIndex))
       return true
     })
-  }, [activeStepIndex, clearTimer, play.steps.length])
-
-  const goToStep = useCallback(
-    (stepIndex: number) => {
-      clearTimer()
-      setIsPlaying(false)
-      setActiveStepIndex(Math.min(Math.max(stepIndex, 0), play.steps.length - 1))
-    },
-    [clearTimer, play.steps.length],
-  )
+  }, [clearTimer, play.steps.length])
 
   useEffect(() => {
     if (!isPlaying) {
       return
     }
 
-    const step = play.steps[activeStepIndex]
+    const step = play.steps[currentStepIndex]
     if (!step) {
       return
     }
 
     timeoutRef.current = window.setTimeout(() => {
-      if (activeStepIndex >= play.steps.length - 1) {
+      if (currentStepIndex >= play.steps.length - 1) {
         setIsPlaying(false)
         return
       }
 
-      setActiveStepIndex((current) => current + 1)
+      setCurrentStepIndex((current) => current + 1)
     }, step.duration ?? 1000)
 
     return clearTimer
-  }, [activeStepIndex, clearTimer, isPlaying, play.steps])
+  }, [clearTimer, currentStepIndex, isPlaying, play.steps])
 
   const positions = useMemo(
-    () => getStepPositions(play, activeStepIndex),
-    [activeStepIndex, play],
+    () => getStepPositions(play, currentStepIndex),
+    [currentStepIndex, play],
   )
 
-  const activeStep = play.steps[activeStepIndex]
+  const activeStep = play.steps[currentStepIndex]
   const ballHandler = getBallHandler(play)
 
   const ballPosition: Position = resolveBallPosition(
@@ -82,11 +91,15 @@ export const usePlayAnimation = (play: Play) => {
 
   return {
     activeStep,
-    activeStepIndex,
+    activeStepIndex: currentStepIndex,
     ballPosition,
+    currentPlayers: positions,
+    currentStepIndex,
     goToStep,
     isPlaying,
-    playAnimation,
+    nextStep,
+    playFullSequence,
+    previousStep,
     positions,
     reset,
   }

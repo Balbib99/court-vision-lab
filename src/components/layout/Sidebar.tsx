@@ -9,9 +9,9 @@ const navItems = [
 
 export function Sidebar() {
   return (
-    <aside className="sidebar hidden w-20 shrink-0 flex-col border-r border-[#584237]/25 bg-[#1c1b1d] py-5 md:flex">
+    <aside className="sidebar panel-glass hidden w-20 shrink-0 flex-col border-r py-5 md:flex">
       <div className="sidebar-logo mb-10 flex justify-center">
-        <div className="sidebar-logo-mark flex h-12 w-12 items-center justify-center rounded-md border border-orange-500/45 bg-orange-500/10 font-display text-lg text-orange-500">
+        <div className="sidebar-logo-mark accent-bg-soft tactical-border-strong accent-text flex h-12 w-12 items-center justify-center rounded-md border font-display text-lg">
           CV
         </div>
       </div>
@@ -24,8 +24,8 @@ export function Sidebar() {
             className={[
               'sidebar-item flex w-[60px] flex-col items-center justify-center gap-1 rounded-md py-3 text-[10px] font-black uppercase tracking-wide transition',
               active
-                ? 'is-active bg-orange-500 text-[#341100]'
-                : 'text-[#e0c0b1] opacity-70 hover:bg-[#353437]/70',
+                ? 'is-active accent-bg'
+                : 'text-muted opacity-70 hover:bg-[var(--accent-muted)]',
             ].join(' ')}
             title={active ? label : `${label} coming soon`}
             aria-label={active ? label : `${label} coming soon`}
@@ -38,7 +38,7 @@ export function Sidebar() {
       <button
         type="button"
         disabled
-        className="sidebar-settings mx-auto flex h-12 w-12 items-center justify-center rounded-md text-[#e0c0b1] opacity-70"
+        className="sidebar-settings text-muted mx-auto flex h-12 w-12 items-center justify-center rounded-md opacity-70"
         title="Settings coming soon"
         aria-label="Settings coming soon"
       >

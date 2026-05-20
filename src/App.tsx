@@ -5,14 +5,27 @@ import { AppShell } from './components/layout/AppShell'
 import { PlayDetailsPanel } from './components/plays/PlayDetailsPanel'
 import { defaultPlay, plays } from './data/plays'
 import { usePlayAnimation } from './hooks/usePlayAnimation'
+import { useTheme } from './hooks/useTheme'
 
 function App() {
+  const { theme, toggleTheme } = useTheme()
   const [selectedPlayId, setSelectedPlayId] = useState(defaultPlay.id)
   const selectedPlay = useMemo(
     () => plays.find((play) => play.id === selectedPlayId) ?? defaultPlay,
     [selectedPlayId],
   )
-  const { activeStep, activeStepIndex, ballPosition, isPlaying, playAnimation, positions, reset } =
+  const {
+    activeStep,
+    activeStepIndex,
+    ballPosition,
+    goToStep,
+    isPlaying,
+    nextStep,
+    playFullSequence,
+    positions,
+    previousStep,
+    reset,
+  } =
     usePlayAnimation(selectedPlay)
 
   const handleSelectPlay = (playId: string) => {
@@ -26,9 +39,14 @@ function App() {
       activeStep={activeStep}
       activeStepIndex={activeStepIndex}
       isPlaying={isPlaying}
-      onPlay={playAnimation}
+      onNextStep={nextStep}
+      onPlayFullSequence={playFullSequence}
+      onPreviousStep={previousStep}
       onReset={reset}
+      onStepSelect={goToStep}
+      onToggleTheme={toggleTheme}
       stepCount={selectedPlay.steps.length}
+      theme={theme}
     >
       <motion.div
         className="relative flex min-h-[calc(100vh-80px)] flex-col xl:block"

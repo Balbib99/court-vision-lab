@@ -1,29 +1,33 @@
-import { Save, Search, Settings, Share2 } from 'lucide-react'
+import { Moon, Save, Search, Settings, Share2, Sun } from 'lucide-react'
+import type { Theme } from '../../hooks/useTheme'
 import type { Play } from '../../types/play'
 
 type TopBarProps = {
   activePlay: Play
+  theme: Theme
+  onToggleTheme: () => void
 }
 
-export function TopBar({ activePlay }: TopBarProps) {
+export function TopBar({ activePlay, theme, onToggleTheme }: TopBarProps) {
   return (
-    <header className="topbar sticky top-0 z-50 flex h-20 items-center justify-between border-b border-[#584237]/35 bg-[#1c1b1d]/95 px-4 backdrop-blur-xl md:px-8">
+    <header className="topbar panel-glass sticky top-0 z-50 flex h-20 items-center justify-between border-b px-4 md:px-8">
       <div className="flex min-w-0 items-center gap-3 sm:gap-5">
-        <h1 className="topbar-brand shrink-0 font-display text-xl tracking-[0.08em] text-orange-500 sm:text-2xl md:text-3xl">
+        <h1 className="topbar-brand accent-text shrink-0 font-display text-xl tracking-[0.08em] sm:text-2xl md:text-3xl">
           COURT VISION<span className="hidden sm:inline"> LAB</span>
         </h1>
-        <div className="topbar-divider hidden h-8 w-px bg-[#584237]/60 sm:block" />
+        <div className="topbar-divider tactical-border hidden h-8 w-px border-l sm:block" />
         <div className="topbar-play min-w-0">
-          <p className="topbar-eyebrow font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[#e0c0b1]">Active Play</p>
-          <p className="topbar-play-name truncate text-sm font-bold text-[#e5e1e4] md:text-base">{activePlay.name}</p>
+          <p className="topbar-eyebrow text-soft font-mono text-[11px] font-semibold uppercase tracking-[0.16em]">Active Play</p>
+          <p className="topbar-play-name text-main truncate text-sm font-bold md:text-base">{activePlay.name}</p>
         </div>
       </div>
 
-      <div className="topbar-actions hidden items-center gap-4 lg:flex">
-        <label className="flex h-12 w-80 items-center gap-3 rounded-md border border-[#584237]/45 bg-[#2a2a2c] px-4 text-[#e0c0b1]">
+      <div className="flex items-center gap-2 lg:gap-4">
+        <div className="topbar-actions hidden items-center gap-4 lg:flex">
+        <label className="panel flex h-12 w-80 items-center gap-3 rounded-md border px-4 text-[var(--text-muted)]">
           <Search size={19} aria-hidden="true" />
           <input
-            className="w-full border-0 bg-transparent p-0 font-mono text-sm text-[#e5e1e4] outline-none placeholder:text-slate-500"
+            className="text-main w-full border-0 bg-transparent p-0 font-mono text-sm outline-none placeholder:text-[var(--text-soft)]"
             placeholder="Search plays..."
             disabled
           />
@@ -38,7 +42,7 @@ export function TopBar({ activePlay }: TopBarProps) {
               key={label}
               type="button"
               disabled
-              className="flex h-10 w-10 items-center justify-center rounded-md text-[#e0c0b1] opacity-70"
+              className="text-muted flex h-10 w-10 items-center justify-center rounded-md opacity-70"
               aria-label={label}
               title={label}
             >
@@ -46,6 +50,16 @@ export function TopBar({ activePlay }: TopBarProps) {
             </button>
           ))}
         </div>
+        </div>
+        <button
+          type="button"
+          onClick={onToggleTheme}
+          className="panel flex h-10 w-10 items-center justify-center rounded-md border text-[var(--accent)] transition hover:bg-[var(--accent-muted)]"
+          aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+        >
+          {theme === 'dark' ? <Sun size={19} aria-hidden="true" /> : <Moon size={19} aria-hidden="true" />}
+        </button>
       </div>
     </header>
   )

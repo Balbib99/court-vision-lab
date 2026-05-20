@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { Theme } from '../../hooks/useTheme'
 import type { Play, PlayStep } from '../../types/play'
 import { BottomControls } from './BottomControls'
 import { RightToolbar } from './RightToolbar'
@@ -11,9 +12,14 @@ type AppShellProps = {
   activeStepIndex: number
   children: ReactNode
   isPlaying: boolean
-  onPlay: () => void
+  onToggleTheme: () => void
+  onNextStep: () => void
+  onPlayFullSequence: () => void
+  onPreviousStep: () => void
   onReset: () => void
+  onStepSelect: (stepIndex: number) => void
   stepCount: number
+  theme: Theme
 }
 
 export function AppShell({
@@ -22,13 +28,18 @@ export function AppShell({
   activeStepIndex,
   children,
   isPlaying,
-  onPlay,
+  onNextStep,
+  onPlayFullSequence,
+  onPreviousStep,
   onReset,
+  onStepSelect,
   stepCount,
+  onToggleTheme,
+  theme,
 }: AppShellProps) {
   return (
-    <div className="app-shell min-h-dvh bg-[#0e0e10] text-[#e5e1e4] xl:overflow-hidden">
-      <TopBar activePlay={activePlay} />
+    <div className="app-shell app-bg min-h-dvh xl:overflow-hidden">
+      <TopBar activePlay={activePlay} theme={theme} onToggleTheme={onToggleTheme} />
       <div className="app-body flex min-h-[calc(100dvh-80px)]">
         <Sidebar />
         <main className="app-main relative flex min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto xl:overflow-hidden">
@@ -38,9 +49,15 @@ export function AppShell({
               <BottomControls
                 activeStep={activeStep}
                 activeStepIndex={activeStepIndex}
+                isFirstStep={activeStepIndex === 0}
+                isLastStep={activeStepIndex === activePlay.steps.length - 1}
                 isPlaying={isPlaying}
-                onPlay={onPlay}
+                onNextStep={onNextStep}
+                onPlayFullSequence={onPlayFullSequence}
+                onPreviousStep={onPreviousStep}
                 onReset={onReset}
+                onStepSelect={onStepSelect}
+                steps={activePlay.steps}
                 stepCount={stepCount}
               />
             </div>

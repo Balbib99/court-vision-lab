@@ -20,11 +20,11 @@ export function Court({ play, positions, ballPosition, activeStep, activeStepInd
   const carrierId = activeStep?.ball?.carrierId ?? play.initialPlayers.find((player) => player.hasBall)?.id
 
   return (
-    <section className="court-stage relative flex min-h-[420px] w-full items-center justify-center overflow-hidden bg-[#0e0e10] p-3 sm:p-4 md:min-h-[min(64vh,760px)] md:p-8">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,182,144,0.07),transparent_40%)]" />
-      <div className="court-board relative aspect-[16/9] w-full max-w-[1160px] overflow-hidden rounded-md border-4 border-[#353437] bg-[#131315] shadow-[0_28px_60px_rgba(0,0,0,0.55)]">
+    <section className="court-stage relative flex min-h-[420px] w-full items-center justify-center overflow-hidden bg-transparent p-3 sm:p-4 md:min-h-[min(64vh,760px)] md:p-8">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--accent-muted),transparent_42%)]" />
+      <div className="court-board court-surface relative aspect-[16/9] w-full max-w-[1160px] overflow-hidden rounded-md border-4">
         <CourtGrid />
-        <div className="absolute inset-0 border border-[#ffb690]/20" />
+        <div className="absolute inset-0 border border-[color:var(--border-strong)]" />
         <CourtLines />
         <MovementPath fromPositions={pathStartPositions} step={activeStep} />
         {play.initialPlayers.map((player) => (
