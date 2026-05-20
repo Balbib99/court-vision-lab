@@ -4,6 +4,7 @@ import type { PlayStep } from '../../types/play'
 type BottomControlsProps = {
   activeStep?: PlayStep
   activeStepIndex: number
+  isEditMode: boolean
   isFirstStep: boolean
   isLastStep: boolean
   isPlaying: boolean
@@ -19,6 +20,7 @@ type BottomControlsProps = {
 export function BottomControls({
   activeStep,
   activeStepIndex,
+  isEditMode,
   isFirstStep,
   isLastStep,
   isPlaying,
@@ -37,16 +39,17 @@ export function BottomControls({
           <button
             type="button"
             onClick={onPlayFullSequence}
+            disabled={isEditMode}
             className="control-button accent-bg flex h-11 w-11 items-center justify-center rounded-full transition hover:brightness-110"
-            aria-label={isPlaying ? 'Pause full sequence' : 'Play full sequence'}
-            title={isPlaying ? 'Pause sequence' : 'Play full sequence'}
+            aria-label={isEditMode ? 'Playback disabled in edit mode' : isPlaying ? 'Pause full sequence' : 'Play full sequence'}
+            title={isEditMode ? 'Playback disabled in edit mode' : isPlaying ? 'Pause sequence' : 'Play full sequence'}
           >
             {isPlaying ? <Pause size={20} aria-hidden="true" /> : <Play size={20} aria-hidden="true" />}
           </button>
           <button
             type="button"
             onClick={onPreviousStep}
-            disabled={isFirstStep}
+            disabled={isEditMode || isFirstStep}
             className="control-button text-muted tactical-border flex h-10 w-10 items-center justify-center rounded-full border transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-35"
             aria-label="Previous step"
             title="Previous step"
@@ -56,7 +59,7 @@ export function BottomControls({
           <button
             type="button"
             onClick={onNextStep}
-            disabled={isLastStep}
+            disabled={isEditMode || isLastStep}
             className="control-button text-muted tactical-border flex h-10 w-10 items-center justify-center rounded-full border transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-35"
             aria-label="Next step"
             title="Next step"
@@ -67,16 +70,16 @@ export function BottomControls({
             type="button"
             onClick={onReset}
             className="control-button text-muted tactical-border flex h-10 w-10 items-center justify-center rounded-full border transition hover:bg-[var(--accent-muted)]"
-            aria-label="Reset play"
-            title="Reset"
+            aria-label={isEditMode ? 'Reset positions' : 'Reset play'}
+            title={isEditMode ? 'Reset positions' : 'Reset play'}
           >
             <RotateCcw size={17} aria-hidden="true" />
           </button>
           <div className="step-copy min-w-0">
             <p className="step-label text-soft font-mono text-[11px] uppercase tracking-[0.12em]">
-              Step {activeStepIndex + 1}/{stepCount}
+              {isEditMode ? 'Edit Mode' : `Step ${activeStepIndex + 1}/${stepCount}`}
             </p>
-            <p className="step-title text-main truncate text-sm font-bold">{activeStep?.title ?? 'Ready'}</p>
+            <p className="step-title text-main truncate text-sm font-bold">{isEditMode ? 'Drag players on court' : activeStep?.title ?? 'Ready'}</p>
           </div>
         </div>
         <div className="bottom-controls-meta text-muted flex items-center justify-between gap-6 font-mono text-xs sm:justify-end">
@@ -84,7 +87,7 @@ export function BottomControls({
             <Gauge size={16} aria-hidden="true" />
             1x
           </span>
-          <span className="accent-text">{isPlaying ? 'RUN' : 'HOLD'}</span>
+          <span className="accent-text">{isEditMode ? 'EDIT' : isPlaying ? 'RUN' : 'HOLD'}</span>
           <span>Q3</span>
         </div>
       </div>
@@ -99,8 +102,9 @@ export function BottomControls({
               key={step.id}
               type="button"
               onClick={() => onStepSelect(index)}
+              disabled={isEditMode}
               className={[
-                'timeline-step min-w-[126px] flex-1 rounded-md border px-3 py-2 text-left transition',
+                'timeline-step min-w-[126px] flex-1 rounded-md border px-3 py-2 text-left transition disabled:cursor-not-allowed disabled:opacity-50',
                 isActive
                   ? 'accent-badge'
                   : isComplete

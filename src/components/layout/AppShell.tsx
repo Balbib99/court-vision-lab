@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import type { Theme } from '../../hooks/useTheme'
-import type { Play, PlayStep } from '../../types/play'
+import type { Play, Player, PlayStep } from '../../types/play'
 import { BottomControls } from './BottomControls'
 import { RightToolbar } from './RightToolbar'
 import { Sidebar } from './Sidebar'
@@ -10,9 +10,13 @@ type AppShellProps = {
   activePlay: Play
   activeStep?: PlayStep
   activeStepIndex: number
+  ballCarrierId?: string
   children: ReactNode
   isPlaying: boolean
+  isEditMode: boolean
+  onAssignBall: () => void
   onToggleTheme: () => void
+  onToggleEditMode: () => void
   onNextStep: () => void
   onPlayFullSequence: () => void
   onPreviousStep: () => void
@@ -20,14 +24,18 @@ type AppShellProps = {
   onStepSelect: (stepIndex: number) => void
   stepCount: number
   theme: Theme
+  selectedPlayer?: Player
 }
 
 export function AppShell({
   activePlay,
   activeStep,
   activeStepIndex,
+  ballCarrierId,
   children,
   isPlaying,
+  isEditMode,
+  onAssignBall,
   onNextStep,
   onPlayFullSequence,
   onPreviousStep,
@@ -35,7 +43,9 @@ export function AppShell({
   onStepSelect,
   stepCount,
   onToggleTheme,
+  onToggleEditMode,
   theme,
+  selectedPlayer,
 }: AppShellProps) {
   return (
     <div className="app-shell app-bg min-h-dvh xl:overflow-hidden">
@@ -49,6 +59,7 @@ export function AppShell({
               <BottomControls
                 activeStep={activeStep}
                 activeStepIndex={activeStepIndex}
+                isEditMode={isEditMode}
                 isFirstStep={activeStepIndex === 0}
                 isLastStep={activeStepIndex === activePlay.steps.length - 1}
                 isPlaying={isPlaying}
@@ -62,7 +73,13 @@ export function AppShell({
               />
             </div>
           </div>
-          <RightToolbar />
+          <RightToolbar
+            ballCarrierId={ballCarrierId}
+            isEditMode={isEditMode}
+            onAssignBall={onAssignBall}
+            onToggleEditMode={onToggleEditMode}
+            selectedPlayer={selectedPlayer}
+          />
         </main>
       </div>
     </div>

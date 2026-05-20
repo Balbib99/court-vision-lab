@@ -4,6 +4,7 @@ import { Court } from './components/court/Court'
 import { AppShell } from './components/layout/AppShell'
 import { PlayDetailsPanel } from './components/plays/PlayDetailsPanel'
 import { defaultPlay, plays } from './data/plays'
+import { useCourtEditor } from './hooks/useCourtEditor'
 import { usePlayAnimation } from './hooks/usePlayAnimation'
 import { useTheme } from './hooks/useTheme'
 
@@ -21,16 +22,44 @@ function App() {
     goToStep,
     isPlaying,
     nextStep,
+    pause,
     playFullSequence,
     positions,
     previousStep,
     reset,
   } =
     usePlayAnimation(selectedPlay)
+  const {
+    assignBallToSelected,
+    ballCarrierId,
+    editedBallPosition,
+    editedPositions,
+    isEditMode,
+    resetEditedPositions,
+    resetForPlay,
+    selectedPlayer,
+    selectedPlayerId,
+    selectPlayer,
+    toggleEditMode,
+    updatePlayerPosition,
+  } = useCourtEditor(selectedPlay, pause)
+  const courtPositions = isEditMode ? editedPositions : positions
+  const courtBallPosition = isEditMode ? editedBallPosition : ballPosition
 
   const handleSelectPlay = (playId: string) => {
+    const nextPlay = plays.find((play) => play.id === playId) ?? defaultPlay
     reset()
+    resetForPlay(nextPlay)
     setSelectedPlayId(playId)
+  }
+
+  const handleReset = () => {
+    if (isEditMode) {
+      resetEditedPositions()
+      return
+    }
+
+    reset()
   }
 
   return (
@@ -38,13 +67,18 @@ function App() {
       activePlay={selectedPlay}
       activeStep={activeStep}
       activeStepIndex={activeStepIndex}
+      ballCarrierId={ballCarrierId}
       isPlaying={isPlaying}
+      isEditMode={isEditMode}
+      onAssignBall={assignBallToSelected}
       onNextStep={nextStep}
       onPlayFullSequence={playFullSequence}
       onPreviousStep={previousStep}
-      onReset={reset}
+      onReset={handleReset}
       onStepSelect={goToStep}
+      onToggleEditMode={toggleEditMode}
       onToggleTheme={toggleTheme}
+      selectedPlayer={selectedPlayer}
       stepCount={selectedPlay.steps.length}
       theme={theme}
     >
@@ -56,17 +90,26 @@ function App() {
       >
         <Court
           play={selectedPlay}
-          positions={positions}
-          ballPosition={ballPosition}
+          positions={courtPositions}
+          ballPosition={courtBallPosition}
           activeStep={activeStep}
           activeStepIndex={activeStepIndex}
+          ballCarrierId={isEditMode ? ballCarrierId : undefined}
+          isEditMode={isEditMode}
+          onMovePlayer={updatePlayerPosition}
+          onSelectPlayer={selectPlayer}
+          selectedPlayerId={selectedPlayerId}
         />
         <PlayDetailsPanel
           activeStep={activeStep}
           activeStepIndex={activeStepIndex}
+          ballCarrierId={ballCarrierId}
+          isEditMode={isEditMode}
+          onAssignBall={assignBallToSelected}
           onSelectPlay={handleSelectPlay}
           play={selectedPlay}
           plays={plays}
+          selectedPlayer={selectedPlayer}
         />
       </motion.div>
     </AppShell>

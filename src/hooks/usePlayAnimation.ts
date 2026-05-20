@@ -20,6 +20,11 @@ export const usePlayAnimation = (play: Play) => {
     setCurrentStepIndex(0)
   }, [clearTimer])
 
+  const pause = useCallback(() => {
+    clearTimer()
+    setIsPlaying(false)
+  }, [clearTimer])
+
   const goToStep = useCallback(
     (stepIndex: number) => {
       clearTimer()
@@ -98,6 +103,7 @@ export const usePlayAnimation = (play: Play) => {
     goToStep,
     isPlaying,
     nextStep,
+    pause,
     playFullSequence,
     previousStep,
     positions,

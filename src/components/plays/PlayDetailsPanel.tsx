@@ -1,4 +1,4 @@
-import type { Play, PlayStep } from '../../types/play'
+import type { Play, Player, PlayStep } from '../../types/play'
 import { PlaySelector } from './PlaySelector'
 
 type PlayDetailsPanelProps = {
@@ -7,6 +7,10 @@ type PlayDetailsPanelProps = {
   onSelectPlay: (playId: string) => void
   play: Play
   plays: Play[]
+  isEditMode: boolean
+  selectedPlayer?: Player
+  ballCarrierId?: string
+  onAssignBall: () => void
 }
 
 export function PlayDetailsPanel({
@@ -15,7 +19,13 @@ export function PlayDetailsPanel({
   onSelectPlay,
   play,
   plays,
+  isEditMode,
+  selectedPlayer,
+  ballCarrierId,
+  onAssignBall,
 }: PlayDetailsPanelProps) {
+  const selectedPlayerHasBall = Boolean(selectedPlayer && selectedPlayer.id === ballCarrierId)
+
   return (
     <aside className="play-details-panel panel-floating w-full border-t p-4 pb-8 xl:absolute xl:left-6 xl:top-6 xl:z-30 xl:w-[340px] xl:border xl:pb-4">
       <div className="play-details-selector">
@@ -41,9 +51,37 @@ export function PlayDetailsPanel({
       </div>
 
       <div className="current-read tactical-border mt-5 border-t pt-5">
-        <h3 className="text-soft font-mono text-[11px] uppercase tracking-[0.16em]">Current read</h3>
-        <p className="text-main mt-2 text-sm font-bold">{activeStep?.title}</p>
-        <p className="current-read-description text-muted mt-1 text-sm leading-6">{activeStep?.description}</p>
+        <h3 className="text-soft font-mono text-[11px] uppercase tracking-[0.16em]">
+          {isEditMode ? 'Selected player' : 'Current read'}
+        </h3>
+        {isEditMode ? (
+          <div className="mt-2">
+            <p className="text-main text-sm font-bold">{selectedPlayer?.label ?? 'No player selected'}</p>
+            <p className="current-read-description text-muted mt-1 text-sm leading-6">
+              {selectedPlayer
+                ? `${selectedPlayer.team} ${selectedPlayer.role ? `- ${selectedPlayer.role}` : ''}`
+                : 'Select a player on the court to inspect or assign the ball.'}
+            </p>
+            {selectedPlayer && (
+              <p className="accent-text mt-2 font-mono text-[11px] uppercase tracking-[0.12em]">
+                {ballCarrierId === selectedPlayer.id ? 'Has ball' : 'No ball'}
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={onAssignBall}
+              disabled={!selectedPlayer || selectedPlayerHasBall}
+              className="accent-badge mt-3 rounded-md px-3 py-2 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {selectedPlayerHasBall ? 'Has Ball' : selectedPlayer ? 'Assign Ball' : 'Select player'}
+            </button>
+          </div>
+        ) : (
+          <>
+            <p className="text-main mt-2 text-sm font-bold">{activeStep?.title}</p>
+            <p className="current-read-description text-muted mt-1 text-sm leading-6">{activeStep?.description}</p>
+          </>
+        )}
       </div>
 
       <ol className="play-steps tactical-border mt-5 grid gap-2 border-t pt-5">

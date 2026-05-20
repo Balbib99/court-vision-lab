@@ -13,6 +13,16 @@ export const toPercent = ({ x, y }: Position) => ({
   top: `${(y / COURT_HEIGHT) * 100}%`,
 })
 
+export const fromClientPoint = (
+  clientX: number,
+  clientY: number,
+  bounds: DOMRect,
+): Position =>
+  clampPosition({
+    x: ((clientX - bounds.left) / bounds.width) * COURT_WIDTH,
+    y: ((clientY - bounds.top) / bounds.height) * COURT_HEIGHT,
+  })
+
 export const getInitialPositions = (players: Player[]): Record<string, Position> =>
   players.reduce<Record<string, Position>>((positions, player) => {
     positions[player.id] = clampPosition(player.position)
