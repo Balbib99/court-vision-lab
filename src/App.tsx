@@ -7,6 +7,7 @@ import { PlayDetailsPanel } from './components/plays/PlayDetailsPanel'
 import { defaultPlay, plays } from './data/plays'
 import { useCustomPlays } from './hooks/useCustomPlays'
 import { useCourtEditor } from './hooks/useCourtEditor'
+import { useExportCourt } from './hooks/useExportCourt'
 import { usePlayAnimation } from './hooks/usePlayAnimation'
 import { useTheme } from './hooks/useTheme'
 import type { DrawingTool, TacticalAnnotation } from './types/play'
@@ -24,6 +25,8 @@ function App() {
   const [saveStatus, setSaveStatus] = useState<BoardSaveStatus>('idle')
   const [playbookMessage, setPlaybookMessage] = useState('')
   const [activeTool, setActiveTool] = useState<DrawingTool>('select')
+  const [isCoachMode, setIsCoachMode] = useState(false)
+  const courtExportRef = useRef<HTMLDivElement>(null)
   const saveStatusTimerRef = useRef<number | undefined>(undefined)
   const playbookMessageTimerRef = useRef<number | undefined>(undefined)
   const didPrimeAutosaveRef = useRef(false)
@@ -68,12 +71,14 @@ function App() {
     toggleEditMode,
     updatePlayerPosition,
   } = useCourtEditor(selectedPlay, pause, initialBoardState)
-  const courtPositions = isEditMode ? editedPositions : positions
-  const courtBallPosition = isEditMode ? editedBallPosition : ballPosition
   const selectedPlayIsCustom = isCustomPlay(selectedPlay)
-  const canUseDrawingTools = isEditMode && selectedPlayIsCustom
-  const currentEditorPlayers = isEditMode ? editedPlayers : selectedPlay.initialPlayers
-  const currentBallCarrierId = isEditMode ? ballCarrierId : activeStep?.ballOwnerId ?? activeStep?.ball?.carrierId ?? getBallHandler(selectedPlay)?.id
+  const effectiveIsEditMode = isEditMode && !isCoachMode
+  const courtPositions = effectiveIsEditMode ? editedPositions : positions
+  const courtBallPosition = effectiveIsEditMode ? editedBallPosition : ballPosition
+  const canUseDrawingTools = effectiveIsEditMode && selectedPlayIsCustom
+  const currentEditorPlayers = effectiveIsEditMode ? editedPlayers : selectedPlay.initialPlayers
+  const currentBallCarrierId = effectiveIsEditMode ? ballCarrierId : activeStep?.ballOwnerId ?? activeStep?.ball?.carrierId ?? getBallHandler(selectedPlay)?.id
+  const { exportCourt, exportStatus } = useExportCourt()
 
   const showSaveFeedback = useCallback((status: Exclude<BoardSaveStatus, 'idle'>) => {
     if (saveStatusTimerRef.current) {
@@ -118,9 +123,9 @@ function App() {
     return createBoardState({
       selectedPlayId: selectedPlay.id,
       currentStepIndex: activeStepIndex,
-      players: isEditMode ? editedPlayers : selectedPlay.initialPlayers,
-      positions: isEditMode ? editedPositions : positions,
-      ballCarrierId: isEditMode ? ballCarrierId : playBallCarrierId,
+      players: effectiveIsEditMode ? editedPlayers : selectedPlay.initialPlayers,
+      positions: effectiveIsEditMode ? editedPositions : positions,
+      ballCarrierId: effectiveIsEditMode ? ballCarrierId : playBallCarrierId,
       isCustom: isBoardCustom,
     })
   }, [
@@ -131,7 +136,7 @@ function App() {
     editedPlayers,
     editedPositions,
     isBoardCustom,
-    isEditMode,
+    effectiveIsEditMode,
     positions,
     selectedPlay,
   ])
@@ -142,7 +147,7 @@ function App() {
   }, [createCurrentBoardState, showSaveFeedback])
 
   useEffect(() => {
-    if (!isEditMode) {
+    if (!effectiveIsEditMode) {
       didPrimeAutosaveRef.current = false
       return
     }
@@ -159,7 +164,22 @@ function App() {
     }, 650)
 
     return () => window.clearTimeout(autosaveTimer)
-  }, [createCurrentBoardState, isEditMode, showSaveFeedback])
+  }, [createCurrentBoardState, effectiveIsEditMode, showSaveFeedback])
+
+  useEffect(() => {
+    if (!isCoachMode) {
+      return
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsCoachMode(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isCoachMode])
 
   const handleSelectPlay = (playId: string) => {
     const nextPlay = allPlays.find((play) => play.id === playId) ?? defaultPlay
@@ -189,7 +209,7 @@ function App() {
   }
 
   const handlePreviousStep = () => {
-    if (selectedPlayIsCustom && isEditMode) {
+    if (selectedPlayIsCustom && effectiveIsEditMode) {
       const stepIndex = Math.max(activeStepIndex - 1, 0)
       goToStep(stepIndex)
       applyCustomStepToEditor(selectedPlay, stepIndex)
@@ -200,7 +220,7 @@ function App() {
   }
 
   const handleNextStep = () => {
-    if (selectedPlayIsCustom && isEditMode) {
+    if (selectedPlayIsCustom && effectiveIsEditMode) {
       const stepIndex = Math.min(activeStepIndex + 1, selectedPlay.steps.length - 1)
       goToStep(stepIndex)
       applyCustomStepToEditor(selectedPlay, stepIndex)
@@ -231,6 +251,20 @@ function App() {
     }
 
     toggleEditMode()
+  }
+
+  const handleEnterCoachMode = () => {
+    pause()
+    setActiveTool('select')
+    setIsCoachMode(true)
+  }
+
+  const handleExitCoachMode = () => {
+    setIsCoachMode(false)
+  }
+
+  const handleExportPng = () => {
+    void exportCourt(courtExportRef.current, selectedPlay.name, activeStepIndex)
   }
 
   const handleSelectTool = (tool: DrawingTool) => {
@@ -425,9 +459,9 @@ function App() {
       basePlay: selectedPlay,
       name: trimmedName,
       description,
-      players: isEditMode ? editedPlayers : selectedPlay.initialPlayers,
+      players: effectiveIsEditMode ? editedPlayers : selectedPlay.initialPlayers,
       positions: courtPositions,
-      ballCarrierId: isEditMode ? ballCarrierId : activeStep?.ballOwnerId ?? activeStep?.ball?.carrierId ?? getBallHandler(selectedPlay)?.id,
+      ballCarrierId: effectiveIsEditMode ? ballCarrierId : activeStep?.ballOwnerId ?? activeStep?.ball?.carrierId ?? getBallHandler(selectedPlay)?.id,
     })
 
     addCustomPlay(customPlay)
@@ -480,7 +514,7 @@ function App() {
   }
 
   const handleReset = () => {
-    if (isEditMode) {
+    if (effectiveIsEditMode) {
       if (selectedPlayIsCustom) {
         reset()
         applyCustomStepToEditor(selectedPlay, 0)
@@ -502,7 +536,7 @@ function App() {
   }
 
   const handleClearBoard = () => {
-    if (!isEditMode || editedPlayers.length === 0) {
+    if (!effectiveIsEditMode || editedPlayers.length === 0) {
       return
     }
 
@@ -524,8 +558,8 @@ function App() {
     showSaveFeedback('saved')
   }
 
-  const canClearBoard = isEditMode && editedPlayers.length > 0
-  const clearBoardLabel = !isEditMode
+  const canClearBoard = effectiveIsEditMode && editedPlayers.length > 0
+  const clearBoardLabel = !effectiveIsEditMode
     ? 'Clear Board available in Edit Mode'
     : editedPlayers.length > 0
       ? 'Clear Board'
@@ -546,13 +580,18 @@ function App() {
       canUseDrawingTools={canUseDrawingTools}
       clearBoardLabel={clearBoardLabel}
       isPlaying={isPlaying}
-      isEditMode={isEditMode}
+      isCoachMode={isCoachMode}
+      isEditMode={effectiveIsEditMode}
+      exportStatus={exportStatus}
       onAddDefense={() => addPlayer('defense')}
       onAddOffense={() => addPlayer('offense')}
       onAssignBall={assignBallToSelected}
       onClearBoard={handleClearBoard}
       onDeleteCustomPlay={handleDeleteCustomPlay}
       onDuplicatePlay={handleDuplicatePlay}
+      onEnterCoachMode={handleEnterCoachMode}
+      onExitCoachMode={handleExitCoachMode}
+      onExportPng={handleExportPng}
       onNextStep={handleNextStep}
       onPlayFullSequence={playFullSequence}
       onPreviousStep={handlePreviousStep}
@@ -572,30 +611,33 @@ function App() {
       theme={theme}
     >
       <motion.div
-        className="relative flex min-h-[calc(100vh-80px)] flex-col xl:block"
+        className={['relative flex flex-col xl:block', isCoachMode ? 'min-h-[calc(100dvh-64px)]' : 'min-h-[calc(100vh-80px)]'].join(' ')}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.35 }}
       >
-        <Court
-          play={selectedPlay}
-          positions={courtPositions}
-          ballPosition={courtBallPosition}
-          activeStep={activeStep}
-          activeStepIndex={activeStepIndex}
-          activeTool={activeTool}
-          annotations={activeStep?.annotations}
-          ballCarrierId={isEditMode ? ballCarrierId : undefined}
-          canEditAnnotations={canUseDrawingTools}
-          isEditMode={isEditMode}
-          onCreateAnnotation={handleCreateAnnotation}
-          onEraseAnnotation={handleEraseAnnotation}
-          onMovePlayer={updatePlayerPosition}
-          onSelectPlayer={selectPlayer}
-          players={isEditMode ? editedPlayers : undefined}
-          selectedPlayerId={selectedPlayerId}
-        />
-        <PlayDetailsPanel
+        <div ref={courtExportRef} className={isCoachMode ? 'coach-export-target flex min-h-[calc(100dvh-160px)] items-center' : undefined}>
+          <Court
+            play={selectedPlay}
+            positions={courtPositions}
+            ballPosition={courtBallPosition}
+            activeStep={activeStep}
+            activeStepIndex={activeStepIndex}
+            activeTool={activeTool}
+            annotations={activeStep?.annotations}
+            ballCarrierId={effectiveIsEditMode ? ballCarrierId : undefined}
+            canEditAnnotations={canUseDrawingTools}
+            isCoachMode={isCoachMode}
+            isEditMode={effectiveIsEditMode}
+            onCreateAnnotation={handleCreateAnnotation}
+            onEraseAnnotation={handleEraseAnnotation}
+            onMovePlayer={updatePlayerPosition}
+            onSelectPlayer={selectPlayer}
+            players={effectiveIsEditMode ? editedPlayers : undefined}
+            selectedPlayerId={selectedPlayerId}
+          />
+        </div>
+        {!isCoachMode && <PlayDetailsPanel
           activeStep={activeStep}
           activeStepIndex={activeStepIndex}
           activeTool={activeTool}
@@ -614,7 +656,7 @@ function App() {
           play={selectedPlay}
           plays={allPlays}
           selectedPlayer={selectedPlayer}
-        />
+        />}
       </motion.div>
     </AppShell>
   )

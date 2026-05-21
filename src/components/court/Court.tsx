@@ -19,6 +19,7 @@ type CourtProps = {
   annotations?: TacticalAnnotationType[]
   ballCarrierId?: string
   canEditAnnotations?: boolean
+  isCoachMode?: boolean
   isEditMode?: boolean
   onCreateAnnotation?: (annotation: Omit<TacticalAnnotationType, 'id' | 'createdAt'>) => void
   onEraseAnnotation?: (annotationId: string) => void
@@ -38,6 +39,7 @@ export function Court({
   annotations = [],
   ballCarrierId,
   canEditAnnotations = false,
+  isCoachMode = false,
   isEditMode = false,
   onCreateAnnotation,
   onEraseAnnotation,
@@ -119,12 +121,16 @@ export function Court({
   }
 
   return (
-    <section className="court-stage relative flex min-h-[420px] w-full items-center justify-center overflow-hidden bg-transparent p-3 sm:p-4 md:min-h-[min(64vh,760px)] md:p-8">
+    <section className={[
+      'court-stage relative flex w-full items-center justify-center overflow-hidden bg-transparent p-3 sm:p-4 md:p-8',
+      isCoachMode ? 'min-h-[calc(100dvh-180px)] md:min-h-[calc(100dvh-170px)]' : 'min-h-[420px] md:min-h-[min(64vh,760px)]',
+    ].join(' ')}>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--accent-muted),transparent_42%)]" />
       <div
         ref={boardRef}
         className={[
-          'court-board court-surface relative aspect-[16/9] w-full max-w-[1160px] overflow-hidden rounded-md border-4',
+          'court-board court-surface relative aspect-[16/9] w-full overflow-hidden rounded-md border-4',
+          isCoachMode ? 'max-w-[1440px]' : 'max-w-[1160px]',
           isEditMode ? 'touch-none' : '',
         ].join(' ')}
         onPointerDown={handleBoardPointerDown}

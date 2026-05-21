@@ -5,6 +5,7 @@ type BottomControlsProps = {
   activeStep?: PlayStep
   activeStepIndex: number
   canNavigateInEditMode?: boolean
+  isCoachMode?: boolean
   isEditMode: boolean
   isFirstStep: boolean
   isLastStep: boolean
@@ -22,6 +23,7 @@ export function BottomControls({
   activeStep,
   activeStepIndex,
   canNavigateInEditMode = false,
+  isCoachMode = false,
   isEditMode,
   isFirstStep,
   isLastStep,
@@ -37,7 +39,10 @@ export function BottomControls({
   const timelineDisabled = isEditMode && !canNavigateInEditMode
 
   return (
-    <div className="bottom-controls panel-floating z-30 mx-auto flex w-full max-w-4xl flex-col gap-3 rounded-2xl border px-4 py-3 sm:rounded-3xl sm:px-5">
+    <div className={[
+      'bottom-controls panel-floating z-30 mx-auto flex w-full flex-col rounded-2xl border px-4 py-3 sm:rounded-3xl sm:px-5',
+      isCoachMode ? 'max-w-2xl gap-2' : 'max-w-4xl gap-3',
+    ].join(' ')}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="bottom-controls-primary flex items-center gap-2.5">
           <button
@@ -96,7 +101,7 @@ export function BottomControls({
         </div>
       </div>
 
-      <div className="play-timeline flex gap-2 overflow-x-auto pb-1" aria-label="Play timeline">
+      <div className={['play-timeline gap-2 overflow-x-auto pb-1', isCoachMode ? 'hidden sm:flex' : 'flex'].join(' ')} aria-label="Play timeline">
         {steps.map((step, index) => {
           const isActive = index === activeStepIndex
           const isComplete = index < activeStepIndex
