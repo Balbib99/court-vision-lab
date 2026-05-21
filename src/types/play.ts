@@ -8,6 +8,7 @@ export type Position = {
 export type Player = {
   id: string
   label: string
+  name?: string
   team: Team
   position: Position
   role?: string

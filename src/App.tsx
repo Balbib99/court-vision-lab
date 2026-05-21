@@ -2,9 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Court } from './components/court/Court'
 import { AppShell } from './components/layout/AppShell'
+import type { AppSection } from './components/layout/Sidebar'
 import type { BoardSaveStatus } from './components/layout/TopBar'
 import { PlayDetailsPanel } from './components/plays/PlayDetailsPanel'
+import { PlaybookView } from './components/views/PlaybookView'
+import { RosterView } from './components/views/RosterView'
+import { StatsView } from './components/views/StatsView'
 import { defaultPlay, plays } from './data/plays'
+import { demoRoster } from './data/roster'
 import { useCustomPlays } from './hooks/useCustomPlays'
 import { useCourtEditor } from './hooks/useCourtEditor'
 import { useExportCourt } from './hooks/useExportCourt'
@@ -25,7 +30,9 @@ function App() {
   const [saveStatus, setSaveStatus] = useState<BoardSaveStatus>('idle')
   const [playbookMessage, setPlaybookMessage] = useState('')
   const [activeTool, setActiveTool] = useState<DrawingTool>('select')
+  const [activeSection, setActiveSection] = useState<AppSection>('board')
   const [isCoachMode, setIsCoachMode] = useState(false)
+  const [isTacticalPanelCollapsed, setIsTacticalPanelCollapsed] = useState(() => window.localStorage.getItem('court-vision-lab:tactical-panel-collapsed') === 'true')
   const courtExportRef = useRef<HTMLDivElement>(null)
   const saveStatusTimerRef = useRef<number | undefined>(undefined)
   const playbookMessageTimerRef = useRef<number | undefined>(undefined)
@@ -187,6 +194,19 @@ function App() {
     resetForPlay(nextPlay)
     setSelectedPlayId(playId)
     saveBoardState(createDefaultStateForPlay(nextPlay))
+  }
+
+  const handleLoadPlayFromPlaybook = (playId: string) => {
+    handleSelectPlay(playId)
+    setActiveSection('board')
+  }
+
+  const handleToggleTacticalPanel = () => {
+    setIsTacticalPanelCollapsed((current) => {
+      const next = !current
+      window.localStorage.setItem('court-vision-lab:tactical-panel-collapsed', String(next))
+      return next
+    })
   }
 
   const applyCustomStepToEditor = useCallback(
@@ -472,8 +492,8 @@ function App() {
     showPlaybookMessage('Custom play saved')
   }
 
-  const handleDuplicatePlay = () => {
-    const defaultName = `${selectedPlay.name} Copy`
+  const handleDuplicatePlay = (playToDuplicate = selectedPlay) => {
+    const defaultName = `${playToDuplicate.name} Copy`
     const name = window.prompt('Name the duplicated play', defaultName)
     if (!name) {
       return
@@ -485,7 +505,7 @@ function App() {
       return
     }
 
-    const customPlay = duplicatePlayAsCustom(selectedPlay, trimmedName)
+    const customPlay = duplicatePlayAsCustom(playToDuplicate, trimmedName)
     addCustomPlay(customPlay)
     reset()
     resetForPlay(customPlay)
@@ -494,8 +514,8 @@ function App() {
     showPlaybookMessage('Play duplicated')
   }
 
-  const handleDeleteCustomPlay = () => {
-    if (!selectedPlayIsCustom) {
+  const handleDeleteCustomPlay = (playToDelete = selectedPlay) => {
+    if (!isCustomPlay(playToDelete)) {
       showPlaybookMessage('Cannot delete built-in play')
       return
     }
@@ -505,12 +525,41 @@ function App() {
       return
     }
 
-    deleteCustomPlay(selectedPlay.id)
+    deleteCustomPlay(playToDelete.id)
     reset()
     resetForPlay(defaultPlay)
     setSelectedPlayId(defaultPlay.id)
     saveBoardState(createDefaultStateForPlay(defaultPlay))
+    setActiveSection('board')
     showPlaybookMessage('Custom play deleted')
+  }
+
+  const handleLoadDemoRosterToCourt = () => {
+    const offenseRoster = demoRoster.filter((player) => player.teamSide === 'offense').slice(0, 5)
+    const namedPlayers = selectedPlay.initialPlayers.map((player) => {
+      if (player.team !== 'offense') {
+        return player
+      }
+
+      const rosterIndex = Number(player.label.replace('O', '')) - 1
+      const rosterPlayer = offenseRoster[rosterIndex]
+      if (!rosterPlayer) {
+        return player
+      }
+
+      return {
+        ...player,
+        name: rosterPlayer.name,
+        role: `${rosterPlayer.position} · ${rosterPlayer.role}`,
+      }
+    })
+
+    applyStepSnapshot(namedPlayers, getInitialPositions(namedPlayers), getBallHandler(selectedPlay)?.id)
+    if (!isEditMode) {
+      toggleEditMode()
+    }
+    setActiveSection('board')
+    showPlaybookMessage('Demo roster loaded')
   }
 
   const handleReset = () => {
@@ -558,6 +607,25 @@ function App() {
     showSaveFeedback('saved')
   }
 
+  const handleCreateEmptyBoard = () => {
+    reset()
+    clearBoard()
+    saveBoardState(createBoardState({
+      selectedPlayId: selectedPlay.id,
+      currentStepIndex: 0,
+      players: [],
+      positions: {},
+      ballCarrierId: undefined,
+      isCustom: true,
+    }))
+    setActiveSection('board')
+    showPlaybookMessage('Empty board ready')
+  }
+
+  const handleAddRosterPlayer = () => {
+    showPlaybookMessage('Add Player coming soon')
+  }
+
   const canClearBoard = effectiveIsEditMode && editedPlayers.length > 0
   const clearBoardLabel = !effectiveIsEditMode
     ? 'Clear Board available in Edit Mode'
@@ -567,6 +635,7 @@ function App() {
 
   return (
     <AppShell
+      activeSection={activeSection}
       activeTool={activeTool}
       activePlay={selectedPlay}
       activeStep={activeStep}
@@ -600,6 +669,7 @@ function App() {
       onResetToPlayDefaults={handleResetToPlayDefaults}
       onSaveAsCustomPlay={handleSaveAsCustomPlay}
       onSaveBoard={handleSaveBoard}
+      onSelectSection={setActiveSection}
       onSelectTool={handleSelectTool}
       onStepSelect={handleStepSelect}
       onToggleEditMode={handleToggleEditMode}
@@ -610,7 +680,7 @@ function App() {
       stepCount={selectedPlay.steps.length}
       theme={theme}
     >
-      <motion.div
+      {activeSection === 'board' ? <motion.div
         className={['relative flex flex-col xl:block', isCoachMode ? 'min-h-[calc(100dvh-64px)]' : 'min-h-[calc(100vh-80px)]'].join(' ')}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -629,6 +699,7 @@ function App() {
             canEditAnnotations={canUseDrawingTools}
             isCoachMode={isCoachMode}
             isEditMode={effectiveIsEditMode}
+            isTacticalPanelCollapsed={isTacticalPanelCollapsed}
             onCreateAnnotation={handleCreateAnnotation}
             onEraseAnnotation={handleEraseAnnotation}
             onMovePlayer={updatePlayerPosition}
@@ -637,12 +708,13 @@ function App() {
             selectedPlayerId={selectedPlayerId}
           />
         </div>
-        {!isCoachMode && <PlayDetailsPanel
+        {!isCoachMode && !isTacticalPanelCollapsed && <PlayDetailsPanel
           activeStep={activeStep}
           activeStepIndex={activeStepIndex}
           activeTool={activeTool}
           ballCarrierId={ballCarrierId}
           canEditTimeline={selectedPlayIsCustom}
+          isCollapsed={isTacticalPanelCollapsed}
           onClearStepAnnotations={handleClearStepAnnotations}
           isEditMode={isEditMode}
           onAddStep={handleAddStep}
@@ -651,13 +723,39 @@ function App() {
           onEditStepDescription={handleEditStepDescription}
           onRenameStep={handleRenameStep}
           onSelectTool={handleSelectTool}
+          onToggleCollapsed={handleToggleTacticalPanel}
           onSelectPlay={handleSelectPlay}
           onUpdateStep={handleUpdateStep}
           play={selectedPlay}
           plays={allPlays}
           selectedPlayer={selectedPlayer}
         />}
-      </motion.div>
+        {!isCoachMode && isTacticalPanelCollapsed && (
+          <button
+            type="button"
+            onClick={handleToggleTacticalPanel}
+            className="panel-floating accent-text absolute left-3 top-3 z-30 rounded-md border px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.1em] transition hover:bg-[var(--accent-muted)] md:left-5 md:top-5"
+            aria-label="Expand tactical panel"
+            title="Expand tactical panel"
+          >
+            Expand Panel
+          </button>
+        )}
+      </motion.div> : activeSection === 'playbook' ? (
+        <PlaybookView
+          builtInPlays={plays}
+          customPlays={customPlays}
+          onCreateEmptyBoard={handleCreateEmptyBoard}
+          selectedPlayId={selectedPlay.id}
+          onDeletePlay={handleDeleteCustomPlay}
+          onDuplicatePlay={handleDuplicatePlay}
+          onLoadPlay={handleLoadPlayFromPlaybook}
+        />
+      ) : activeSection === 'roster' ? (
+        <RosterView players={demoRoster} onAddPlayer={handleAddRosterPlayer} onLoadRosterToCourt={handleLoadDemoRosterToCourt} />
+      ) : (
+        <StatsView players={demoRoster} />
+      )}
     </AppShell>
   )
 }

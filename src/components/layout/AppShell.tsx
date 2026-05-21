@@ -3,13 +3,14 @@ import type { Theme } from '../../hooks/useTheme'
 import type { DrawingTool, Play, Player, PlayStep } from '../../types/play'
 import { BottomControls } from './BottomControls'
 import { RightToolbar } from './RightToolbar'
-import { Sidebar } from './Sidebar'
+import { Sidebar, type AppSection } from './Sidebar'
 import { TopBar, type BoardSaveStatus, type ExportStatus } from './TopBar'
 
 type AppShellProps = {
   activePlay: Play
   activeStep?: PlayStep
   activeStepIndex: number
+  activeSection: AppSection
   activeTool: DrawingTool
   ballCarrierId?: string
   canAddDefense: boolean
@@ -32,6 +33,7 @@ type AppShellProps = {
   onEnterCoachMode: () => void
   onExitCoachMode: () => void
   onExportPng: () => void
+  onSelectSection: (section: AppSection) => void
   onRemoveSelectedPlayer: () => void
   onResetToPlayDefaults: () => void
   onSaveAsCustomPlay: () => void
@@ -56,6 +58,7 @@ export function AppShell({
   activePlay,
   activeStep,
   activeStepIndex,
+  activeSection,
   activeTool,
   ballCarrierId,
   canAddDefense,
@@ -78,6 +81,7 @@ export function AppShell({
   onEnterCoachMode,
   onExitCoachMode,
   onExportPng,
+  onSelectSection,
   onRemoveSelectedPlayer,
   onResetToPlayDefaults,
   onSaveAsCustomPlay,
@@ -97,6 +101,8 @@ export function AppShell({
   theme,
   selectedPlayer,
 }: AppShellProps) {
+  const mobileSections: AppSection[] = ['board', 'playbook', 'roster', 'stats']
+
   return (
     <div className="app-shell app-bg min-h-dvh xl:overflow-hidden">
       <TopBar
@@ -120,11 +126,35 @@ export function AppShell({
         theme={theme}
         onToggleTheme={onToggleTheme}
       />
+      {!isCoachMode && (
+        <nav className="panel-glass flex gap-2 overflow-x-auto border-b px-3 py-2 md:hidden" aria-label="Primary navigation">
+          {mobileSections.map((section) => {
+            const isActive = activeSection === section
+
+            return (
+              <button
+                key={section}
+                type="button"
+                onClick={() => onSelectSection(section)}
+                className={[
+                  'min-w-fit rounded-md px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] transition',
+                  isActive ? 'accent-bg' : 'text-muted hover:bg-[var(--accent-muted)]',
+                ].join(' ')}
+                aria-current={isActive ? 'page' : undefined}
+                aria-label={section}
+                title={section}
+              >
+                {section}
+              </button>
+            )
+          })}
+        </nav>
+      )}
       <div className={['app-body flex', isCoachMode ? 'min-h-[calc(100dvh-64px)]' : 'min-h-[calc(100dvh-80px)]'].join(' ')}>
-        {!isCoachMode && <Sidebar />}
+        {!isCoachMode && <Sidebar activeSection={activeSection} onSelectSection={onSelectSection} />}
         <main className="app-main relative flex min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto xl:overflow-hidden">
           <div className={['app-content relative min-h-0 flex-1', isCoachMode ? 'pb-24 xl:pb-0' : 'pb-32 xl:pb-0'].join(' ')}>{children}</div>
-          <div className={['bottom-controls-wrap pointer-events-none fixed inset-x-4 bottom-4 z-40 xl:absolute xl:bottom-5', isCoachMode ? 'md:left-8 md:right-8' : 'md:left-24 md:right-8'].join(' ')}>
+          {(activeSection === 'board' || isCoachMode) && <div className={['bottom-controls-wrap pointer-events-none fixed inset-x-4 bottom-4 z-40 xl:absolute xl:bottom-5', isCoachMode ? 'md:left-8 md:right-8' : 'md:left-32 md:right-8'].join(' ')}>
             <div className="pointer-events-auto">
               <BottomControls
                 activeStep={activeStep}
@@ -144,8 +174,8 @@ export function AppShell({
                 stepCount={stepCount}
               />
             </div>
-          </div>
-          {!isCoachMode && <RightToolbar
+          </div>}
+          {!isCoachMode && activeSection === 'board' && <RightToolbar
             activeTool={activeTool}
             ballCarrierId={ballCarrierId}
             canAddDefense={canAddDefense}

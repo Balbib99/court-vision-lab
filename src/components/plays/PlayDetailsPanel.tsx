@@ -1,10 +1,12 @@
 import type { DrawingTool, Play, Player, PlayStep } from '../../types/play'
+import { PanelLeftClose } from 'lucide-react'
 import { PlaySelector } from './PlaySelector'
 
 type PlayDetailsPanelProps = {
   activeStep?: PlayStep
   activeStepIndex: number
   activeTool?: DrawingTool
+  isCollapsed?: boolean
   onSelectPlay: (playId: string) => void
   play: Play
   plays: Play[]
@@ -19,6 +21,7 @@ type PlayDetailsPanelProps = {
   onEditStepDescription?: () => void
   onRenameStep?: () => void
   onSelectTool?: (tool: DrawingTool) => void
+  onToggleCollapsed?: () => void
   onUpdateStep?: () => void
 }
 
@@ -26,6 +29,7 @@ export function PlayDetailsPanel({
   activeStep,
   activeStepIndex,
   activeTool = 'select',
+  isCollapsed = false,
   onSelectPlay,
   play,
   plays,
@@ -40,12 +44,23 @@ export function PlayDetailsPanel({
   onEditStepDescription,
   onRenameStep,
   onSelectTool,
+  onToggleCollapsed,
   onUpdateStep,
 }: PlayDetailsPanelProps) {
   const selectedPlayerHasBall = Boolean(selectedPlayer && selectedPlayer.id === ballCarrierId)
 
   return (
-    <aside className="play-details-panel panel-floating w-full border-t p-4 pb-8 xl:absolute xl:left-6 xl:top-6 xl:z-30 xl:w-[340px] xl:border xl:pb-4">
+    <aside className={['play-details-panel panel-floating w-full border-t p-4 pb-8 xl:absolute xl:left-6 xl:top-6 xl:z-30 xl:max-h-[calc(100dvh-190px)] xl:w-[340px] xl:overflow-y-auto xl:overscroll-contain xl:border xl:pb-4 xl:pr-3', isCollapsed ? 'hidden' : ''].join(' ')}>
+      <button
+        type="button"
+        onClick={onToggleCollapsed}
+        className="panel mb-4 flex h-9 w-full items-center justify-center gap-2 rounded-md border text-[var(--text-muted)] transition hover:bg-[var(--accent-muted)]"
+        aria-label="Collapse tactical panel"
+        title="Collapse tactical panel"
+      >
+        <PanelLeftClose size={16} aria-hidden="true" />
+        <span className="font-mono text-[11px] font-bold uppercase tracking-[0.12em]">Collapse Panel</span>
+      </button>
       <div className="play-details-selector">
         <PlaySelector plays={plays} selectedPlayId={play.id} onSelect={onSelectPlay} />
       </div>
@@ -81,7 +96,7 @@ export function PlayDetailsPanel({
         </h3>
         {isEditMode ? (
           <div className="mt-2">
-            <p className="text-main text-sm font-bold">{selectedPlayer?.label ?? 'No player selected'}</p>
+            <p className="text-main text-sm font-bold">{selectedPlayer ? `${selectedPlayer.label}${selectedPlayer.name ? ` - ${selectedPlayer.name}` : ''}` : 'No player selected'}</p>
             <p className="current-read-description text-muted mt-1 text-sm leading-6">
               {selectedPlayer
                 ? `${selectedPlayer.team} ${selectedPlayer.role ? `- ${selectedPlayer.role}` : ''}`

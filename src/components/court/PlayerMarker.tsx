@@ -34,8 +34,8 @@ export function PlayerMarker({
       style={markerStyle}
       animate={markerStyle}
       transition={{ type: 'spring', stiffness: 92, damping: 18, mass: 0.85 }}
-      title={`${player.label} ${player.role ?? ''}`.trim()}
-      aria-label={`${isEditable ? 'Select and drag' : 'Player'} ${player.label}, ${player.team}`}
+      title={`${player.label}${player.name ? ` - ${player.name}` : ''} ${player.role ?? ''}`.trim()}
+      aria-label={`${isEditable ? 'Select and drag' : 'Player'} ${player.label}${player.name ? `, ${player.name}` : ''}, ${player.team}`}
       onPointerDown={onPointerDown}
     >
       <span

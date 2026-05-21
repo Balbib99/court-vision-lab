@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Court Vision | Analytics Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(32, 31, 34, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .court-grid {
+            background-image: radial-gradient(circle at 2px 2px, rgba(255, 182, 144, 0.05) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+        .heat-map-cell {
+            transition: all 0.3s ease;
+        }
+        .heat-map-cell:hover {
+            filter: brightness(1.2);
+            transform: scale(1.05);
+            z-index: 10;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-tint": "#ffb690",
+                      "surface-container-highest": "#353437",
+                      "secondary-fixed": "#ffdf9a",
+                      "secondary-fixed-dim": "#f7be1d",
+                      "inverse-on-surface": "#313032",
+                      "on-primary-fixed": "#341100",
+                      "primary": "#ffb690",
+                      "on-tertiary-fixed-variant": "#4a4643",
+                      "on-surface": "#e5e1e4",
+                      "surface-dim": "#131315",
+                      "on-tertiary-fixed": "#1e1b19",
+                      "primary-container": "#f97316",
+                      "tertiary-fixed": "#e8e1dd",
+                      "on-secondary-container": "#5b4400",
+                      "tertiary-fixed-dim": "#ccc5c1",
+                      "primary-fixed": "#ffdbca",
+                      "background": "#131315",
+                      "secondary-container": "#e4ae00",
+                      "surface-container-lowest": "#0e0e10",
+                      "on-primary-fixed-variant": "#783200",
+                      "on-error-container": "#ffdad6",
+                      "on-secondary": "#3f2e00",
+                      "outline": "#a78b7d",
+                      "surface-container-low": "#1c1b1d",
+                      "on-error": "#690005",
+                      "error-container": "#93000a",
+                      "on-secondary-fixed": "#251a00",
+                      "surface-bright": "#39393b",
+                      "tertiary-container": "#9f9995",
+                      "on-secondary-fixed-variant": "#5a4300",
+                      "tertiary": "#ccc5c1",
+                      "surface": "#131315",
+                      "on-primary-container": "#582200",
+                      "on-background": "#e5e1e4",
+                      "surface-variant": "#353437",
+                      "on-primary": "#552100",
+                      "secondary": "#ffca45",
+                      "on-surface-variant": "#e0c0b1",
+                      "surface-container": "#201f22",
+                      "inverse-surface": "#e5e1e4",
+                      "inverse-primary": "#9d4300",
+                      "error": "#ffb4ab",
+                      "surface-container-high": "#2a2a2c",
+                      "outline-variant": "#584237",
+                      "on-tertiary": "#33302d",
+                      "on-tertiary-container": "#35312f",
+                      "primary-fixed-dim": "#ffb690"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "base": "8px",
+                      "max-width": "1440px",
+                      "margin-desktop": "40px",
+                      "margin-mobile": "16px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "label-sm": ["JetBrains Mono"],
+                      "display-lg": ["Anton"],
+                      "headline-lg-mobile": ["Anton"],
+                      "body-md": ["Hanken Grotesk"],
+                      "headline-lg": ["Anton"],
+                      "body-lg": ["Hanken Grotesk"],
+                      "label-md": ["JetBrains Mono"],
+                      "headline-md": ["Anton"]
+              },
+              "fontSize": {
+                      "label-sm": ["12px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                      "display-lg": ["64px", {"lineHeight": "1.1", "letterSpacing": "0.02em", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "label-md": ["14px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "headline-md": ["24px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-lg overflow-x-hidden">
+<!-- Sidebar Navigation -->
+<aside class="h-screen w-[72px] fixed left-0 top-0 bg-surface-container/60 backdrop-blur-2xl border-r border-white/5 shadow-2xl z-[60] flex flex-col h-full py-4 space-y-4 hidden md:flex">
+<div class="flex flex-col items-center mb-8">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-on-primary-container font-black mb-2 shadow-[0_0_15px_rgba(249,115,22,0.4)]">
+<span class="material-symbols-outlined">sports_basketball</span>
+</div>
+<div class="text-[10px] font-bold text-center text-on-surface opacity-50 uppercase tracking-widest font-label-sm">W.E.</div>
+</div>
+<nav class="flex-1 space-y-2">
+<button class="w-full text-on-surface-variant hover:text-primary flex flex-col items-center justify-center py-3 hover:bg-surface-container-highest/50 transition-all">
+<span class="material-symbols-outlined" data-icon="strategy">strategy</span>
+</button>
+<button class="w-full text-on-surface-variant hover:text-primary flex flex-col items-center justify-center py-3 hover:bg-surface-container-highest/50 transition-all">
+<span class="material-symbols-outlined" data-icon="folder_special">folder_special</span>
+</button>
+<button class="w-full text-on-surface-variant hover:text-primary flex flex-col items-center justify-center py-3 hover:bg-surface-container-highest/50 transition-all">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+</button>
+<!-- Active State -->
+<div class="relative group">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full"></div>
+<button class="bg-primary-container/20 text-primary rounded-xl mx-2 my-1 flex flex-col items-center justify-center py-3 w-14 duration-200">
+<span class="material-symbols-outlined" data-icon="query_stats" style="font-variation-settings: 'FILL' 1;">query_stats</span>
+</button>
+</div>
+<button class="w-full text-on-surface-variant hover:text-primary flex flex-col items-center justify-center py-3 hover:bg-surface-container-highest/50 transition-all">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</nav>
+<div class="mt-auto px-2 flex justify-center">
+<img alt="Coach profile avatar" class="w-10 h-10 rounded-full border-2 border-primary-container/40" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFgbKb9xuDLRaKAaCK7l2dN3l5U_QmVg9ddna6q3XmUB-ATWynzj-Aw4fSZi5YflI-Ec_JXsXp_UUezW9WgO-0bFUezZgGgxCiFk5V8r3LVuy6Pz9DYutnWuxnb4gVHSBAOcNQQQesp0zrLITl13rZprDPtapQ8z703IMKjuYfswpAYrfWI6vRK_mw1Avjxlb0f9berhX2b4fVeYR7OJ_sCOxx2FIYe5qV8UJL-2Hffml0XNEzPuTEkPNnsTY4AURIkoOga-mTi6s"/>
+</div>
+</aside>
+<!-- Top AppBar -->
+<header class="bg-surface/80 backdrop-blur-xl border-b border-white/10 docked full-width top-0 sticky z-50 flex justify-between items-center w-full px-margin-desktop h-[72px] md:pl-[112px]">
+<div class="flex items-center gap-4">
+<h1 class="text-headline-md font-headline-md tracking-tighter text-on-surface uppercase italic">COURT VISION</h1>
+<span class="px-2 py-0.5 bg-primary-container/10 rounded text-[10px] font-bold text-primary border border-primary/20 uppercase tracking-widest font-label-sm">ANALYTICS</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden lg:flex items-center gap-2 bg-surface-container-low px-4 py-1.5 rounded-full border border-white/5">
+<span class="material-symbols-outlined text-primary text-sm">calendar_today</span>
+<span class="text-label-md font-label-md text-on-surface-variant">2023/24 Regular Season</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-white/5 transition-colors rounded-full">
+<span class="material-symbols-outlined">save</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-white/5 transition-colors rounded-full">
+<span class="material-symbols-outlined">share</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-white/5 transition-colors rounded-full">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="md:pl-[72px] p-6 lg:p-margin-desktop min-h-screen">
+<!-- Bento Summary Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter mb-8">
+<div class="glass-panel p-5 rounded-xl flex flex-col justify-between border-l-4 border-l-primary shadow-lg">
+<div>
+<span class="text-label-md font-label-md text-on-surface-variant uppercase">Win/Loss Ratio</span>
+<h3 class="text-display-lg font-display-lg text-primary mt-1">78.4<span class="text-headline-md">%</span></h3>
+</div>
+<div class="flex items-center gap-2 mt-4 text-primary">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span class="text-label-sm font-label-sm uppercase">+2.1% vs Last Season</span>
+</div>
+</div>
+<div class="glass-panel p-5 rounded-xl flex flex-col justify-between border-l-4 border-l-secondary shadow-lg">
+<div>
+<span class="text-label-md font-label-md text-on-surface-variant uppercase">Points Per Possession</span>
+<h3 class="text-display-lg font-display-lg text-on-surface mt-1">1.14</h3>
+</div>
+<div class="flex items-center gap-2 mt-4 text-secondary">
+<span class="material-symbols-outlined text-sm">bolt</span>
+<span class="text-label-sm font-label-sm uppercase">Elite Efficiency Range</span>
+</div>
+</div>
+<div class="glass-panel p-5 rounded-xl flex flex-col justify-between lg:col-span-2 overflow-hidden relative shadow-lg">
+<div class="relative z-10">
+<span class="text-label-md font-label-md text-on-surface-variant uppercase">Team Trend</span>
+<div class="flex gap-8 mt-2">
+<div class="flex flex-col">
+<span class="text-headline-lg font-headline-lg text-primary">118.2</span>
+<span class="text-label-sm text-on-surface-variant uppercase font-label-sm">Offensive RTG</span>
+</div>
+<div class="w-[1px] bg-white/10 my-2"></div>
+<div class="flex flex-col">
+<span class="text-headline-lg font-headline-lg text-secondary">104.5</span>
+<span class="text-label-sm text-on-surface-variant uppercase font-label-sm">Defensive RTG</span>
+</div>
+</div>
+</div>
+<!-- Visual Trend Mockup -->
+<div class="absolute bottom-0 right-0 left-0 h-16 opacity-40 flex items-end">
+<div class="w-full h-full flex items-end px-4 gap-1">
+<div class="flex-1 bg-primary/20 rounded-t-sm" style="height: 40%"></div>
+<div class="flex-1 bg-primary/40 rounded-t-sm" style="height: 60%"></div>
+<div class="flex-1 bg-primary/30 rounded-t-sm" style="height: 55%"></div>
+<div class="flex-1 bg-primary/60 rounded-t-sm" style="height: 80%"></div>
+<div class="flex-1 bg-primary rounded-t-sm shadow-[0_-4px_10px_rgba(255,182,144,0.3)]" style="height: 95%"></div>
+<div class="flex-1 bg-primary/50 rounded-t-sm" style="height: 70%"></div>
+<div class="flex-1 bg-primary/70 rounded-t-sm" style="height: 85%"></div>
+<div class="flex-1 bg-primary/40 rounded-t-sm" style="height: 60%"></div>
+<div class="flex-1 bg-primary/20 rounded-t-sm" style="height: 40%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Analytics Dashboard Content -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Shot Chart Section (Heatmap) -->
+<section class="lg:col-span-8 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-3 uppercase italic">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+                    Shot Efficiency Heatmap
+                </h2>
+<div class="flex gap-2 p-1 bg-surface-container-high rounded-lg">
+<button class="px-4 py-1.5 rounded-md text-label-sm font-label-sm uppercase text-on-surface-variant hover:text-on-surface transition-colors">Full Team</button>
+<button class="px-4 py-1.5 rounded-md bg-primary-container text-on-primary-container text-label-sm font-label-sm uppercase shadow-sm">Starting Five</button>
+</div>
+</div>
+<div class="glass-panel aspect-[16/9] rounded-2xl relative overflow-hidden flex items-center justify-center court-grid group border border-white/10">
+<!-- Basketball Half-Court Lines -->
+<div class="absolute inset-0 border-2 border-white/20 m-8 rounded-b-full"></div>
+<div class="absolute top-8 left-1/2 -translate-x-1/2 w-48 h-64 border-2 border-white/20"></div> <!-- Key -->
+<div class="absolute top-[340px] left-1/2 -translate-x-1/2 w-32 h-32 border-2 border-white/20 rounded-full"></div> <!-- Free throw circle -->
+<div class="absolute top-8 left-1/2 -translate-x-1/2 w-full h-[600px] border-2 border-white/20 rounded-b-full scale-x-90"></div> <!-- 3PT Line -->
+<!-- Heatmap Grid Overlay -->
+<div class="absolute inset-0 grid grid-cols-12 grid-rows-8 gap-1 p-8 opacity-70">
+<!-- Simulated heatmap blobs using primary orange -->
+<div class="col-start-6 col-span-2 row-start-2 bg-primary/80 blur-2xl"></div>
+<div class="col-start-3 col-span-2 row-start-3 bg-primary-container/40 blur-xl"></div>
+<div class="col-start-10 col-span-2 row-start-3 bg-primary-container/60 blur-xl"></div>
+<div class="col-start-6 col-span-2 row-start-5 bg-primary/20 blur-2xl"></div>
+</div>
+<!-- Tactical Data Points -->
+<div class="relative w-full h-full p-12 grid grid-cols-10 grid-rows-6">
+<div class="col-start-5 row-start-2 flex items-center justify-center">
+<div class="w-10 h-10 rounded-full bg-primary shadow-[0_0_25px_rgba(255,182,144,0.6)] flex items-center justify-center heat-map-cell cursor-pointer border border-white/20">
+<span class="text-[10px] font-bold text-on-primary font-label-sm">64%</span>
+</div>
+</div>
+<div class="col-start-2 row-start-3 flex items-center justify-center">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center heat-map-cell cursor-pointer border border-white/10">
+<span class="text-[10px] font-bold text-on-primary-container font-label-sm">42%</span>
+</div>
+</div>
+<div class="col-start-9 row-start-3 flex items-center justify-center">
+<div class="w-9 h-9 rounded-full bg-primary-container/90 flex items-center justify-center heat-map-cell cursor-pointer border border-white/10">
+<span class="text-[10px] font-bold text-on-primary-container font-label-sm">48%</span>
+</div>
+</div>
+</div>
+<!-- Legend Overlay -->
+<div class="absolute bottom-6 right-6 flex items-center gap-4 glass-panel px-4 py-2 rounded-lg border border-white/10">
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest font-label-sm">Efficiency</span>
+<div class="flex h-2 w-24 rounded-full bg-gradient-to-r from-background via-primary-container to-primary"></div>
+<span class="text-[10px] font-bold text-primary uppercase tracking-widest font-label-sm">High</span>
+</div>
+</div>
+</section>
+<!-- Player Efficiency Column -->
+<section class="lg:col-span-4 flex flex-col gap-4">
+<h2 class="font-headline-md text-headline-md text-on-surface uppercase italic">Player Efficiency</h2>
+<div class="space-y-3">
+<!-- Player Card 1 -->
+<div class="glass-panel p-4 rounded-xl flex items-center gap-4 group hover:bg-surface-container-highest/40 transition-all cursor-pointer border border-white/5">
+<div class="relative">
+<img alt="Player avatar" class="w-12 h-12 rounded-full border-2 border-primary shadow-[0_0_10px_rgba(255,182,144,0.3)]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhHLU3JF7b2GjniCtxkDwvxrhWyNFOhecFpr1005oABRw42ZLCVLI3wtnrPus41bFb3Nm4IyGgQBHSABuqrD8ULvpKr4l0wRQ80zQz6lTMEL17vqY7L1Y0aOAyF6czdm6Z3bBhN0MudJ3HX3WeUrP8JGdAQuMRZigZW11aQsPJNIBkCfi3fG97O8Ut00CLybDpzwDwvHUEFqLi08rKTYV-cZmqwcTFJ6ilUfBQRn_kmw0PojOJQmdEkM-jkBxJSUdrP6P6vI0QK2I"/>
+<div class="absolute -bottom-1 -right-1 bg-primary text-on-primary text-[8px] font-bold px-1.5 py-0.5 rounded-sm font-label-sm shadow-sm">PG</div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<span class="font-bold text-on-surface font-body-md">Stephen Curry</span>
+<span class="text-primary font-bold text-lg font-display-lg tracking-tighter">28.4</span>
+</div>
+<div class="w-full h-2 bg-surface-container-highest rounded-full mt-2 overflow-hidden">
+<div class="h-full bg-primary w-[92%] shadow-[0_0_8px_#ffb690]"></div>
+</div>
+</div>
+</div>
+<!-- Player Card 2 -->
+<div class="glass-panel p-4 rounded-xl flex items-center gap-4 group hover:bg-surface-container-highest/40 transition-all cursor-pointer border border-white/5">
+<div class="relative">
+<img alt="Player avatar" class="w-12 h-12 rounded-full border-2 border-primary-container/60" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDNMwaSiQYRumxCumuYpqAOCSnn1jFUmW_ioRaoKE0LdZASCVoFFFGw04CvsN7A6_lIdEFF2WkgSOdxJrUlFdqxLK9egrIzk6MpbLSnP-jQPp0PgseQqNn_Soihtxq95pVnFm2m7vdOV6bCdAle-sW0OgjQU1If4kn8eFtCxulb_OhlBuRU4hRTrHDsSfFasmUU5MH569WLf5vuETAjJd21hYQ05kyJQH0k8ZcOUQ750U5vWNzp69wZQzeKUY6OKSQ6ORPtQVqu50"/>
+<div class="absolute -bottom-1 -right-1 bg-primary-container text-on-primary-container text-[8px] font-bold px-1.5 py-0.5 rounded-sm font-label-sm shadow-sm">SF</div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<span class="font-bold text-on-surface font-body-md">Klay Thompson</span>
+<span class="text-primary-container font-bold text-lg font-display-lg tracking-tighter">21.1</span>
+</div>
+<div class="w-full h-2 bg-surface-container-highest rounded-full mt-2 overflow-hidden">
+<div class="h-full bg-primary-container w-[74%] shadow-[0_0_8px_#f97316]"></div>
+</div>
+</div>
+</div>
+<!-- Player Card 3 -->
+<div class="glass-panel p-4 rounded-xl flex items-center gap-4 group hover:bg-surface-container-highest/40 transition-all cursor-pointer border border-white/5">
+<div class="relative">
+<img alt="Player avatar" class="w-12 h-12 rounded-full border-2 border-primary-container/40" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBglAbKggTEu19-lQaxbxlp1pNAFNKKA4Pa3G0LXokx9BAYhtPJVOmV3RN5SNvf4NGPRsUEIZ6R0-9fTOcweOUCvWHAnXeTurnuQ1bm02uMYmZDHKAteCLH0ODVRhwPz885aZuA-QjW5x8urGPeONoCRj0VDsQaStPdK1bzLY0QX9FU1VD_v_5KcKkQAgulQEOVTkntPlRrRSOSrkD1i29V_czNoDHtDw3MuQH8SaTjnoLZv59Pe-EJetGJ3Qemhm7z5GCDGcaP5Mg"/>
+<div class="absolute -bottom-1 -right-1 bg-primary-container/80 text-on-primary-container text-[8px] font-bold px-1.5 py-0.5 rounded-sm font-label-sm shadow-sm">PF</div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<span class="font-bold text-on-surface font-body-md">Draymond Green</span>
+<span class="text-primary-container/80 font-bold text-lg font-display-lg tracking-tighter">15.8</span>
+</div>
+<div class="w-full h-2 bg-surface-container-highest rounded-full mt-2 overflow-hidden">
+<div class="h-full bg-primary-container/80 w-[62%] shadow-[0_0_8px_rgba(249,115,22,0.4)]"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="glass-panel p-5 rounded-xl mt-4 flex-1 border border-white/5">
+<h3 class="text-label-md font-label-md text-on-surface-variant mb-4 uppercase tracking-widest font-label-sm">Metric Comparison</h3>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<span class="text-on-surface-variant font-body-md">Assist/Turnover Ratio</span>
+<span class="font-bold text-on-surface font-label-sm">2.84</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-on-surface-variant font-body-md">Rebound Rate</span>
+<span class="font-bold text-on-surface font-label-sm">54.2%</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-on-surface-variant font-body-md">True Shooting %</span>
+<span class="font-bold text-primary font-label-sm">62.8%</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Mobile Bottom NavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-surface-container/90 backdrop-blur-xl border-t border-outline-variant md:hidden">
+<button class="flex flex-col items-center justify-center text-on-surface-variant py-2">
+<span class="material-symbols-outlined" data-icon="edit_square">edit_square</span>
+<span class="text-[10px] font-bold uppercase tracking-wider mt-1 font-label-sm">Board</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant py-2">
+<span class="material-symbols-outlined" data-icon="library_books">library_books</span>
+<span class="text-[10px] font-bold uppercase tracking-wider mt-1 font-label-sm">Library</span>
+</button>
+<!-- Active -->
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-6 py-2 scale-90 duration-100 shadow-[0_0_15px_rgba(249,115,22,0.5)]">
+<span class="material-symbols-outlined" data-icon="query_stats" style="font-variation-settings: 'FILL' 1;">query_stats</span>
+<span class="text-[10px] font-bold uppercase tracking-wider mt-1 font-label-sm">Stats</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant py-2">
+<span class="material-symbols-outlined" data-icon="tune">tune</span>
+<span class="text-[10px] font-bold uppercase tracking-wider mt-1 font-label-sm">Settings</span>
+</button>
+</nav>
+<script>
+    // Micro-interaction for heatmap cells
+    document.querySelectorAll('.heat-map-cell').forEach(cell => {
+        cell.addEventListener('mouseenter', () => {
+            const ripples = 2;
+            for (let i = 0; i < ripples; i++) {
+                const ripple = document.createElement('div');
+                ripple.className = 'absolute w-full h-full border border-primary rounded-full animate-ping opacity-40';
+                cell.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 1000);
+            }
+        });
+    });
+
+    // Atmospheric Court Glow using orange theme
+    const canvas = document.createElement('div');
+    canvas.className = 'fixed inset-0 pointer-events-none z-[-1] opacity-10';
+    canvas.style.background = 'radial-gradient(circle at 80% 20%, #f97316 0%, transparent 40%), radial-gradient(circle at 20% 80%, #ffb690 0%, transparent 40%)';
+    document.body.appendChild(canvas);
+</script>
+</body></html>

@@ -21,6 +21,7 @@ type CourtProps = {
   canEditAnnotations?: boolean
   isCoachMode?: boolean
   isEditMode?: boolean
+  isTacticalPanelCollapsed?: boolean
   onCreateAnnotation?: (annotation: Omit<TacticalAnnotationType, 'id' | 'createdAt'>) => void
   onEraseAnnotation?: (annotationId: string) => void
   onMovePlayer?: (playerId: string, position: Position) => void
@@ -41,6 +42,7 @@ export function Court({
   canEditAnnotations = false,
   isCoachMode = false,
   isEditMode = false,
+  isTacticalPanelCollapsed = false,
   onCreateAnnotation,
   onEraseAnnotation,
   onMovePlayer,
@@ -130,7 +132,7 @@ export function Court({
         ref={boardRef}
         className={[
           'court-board court-surface relative aspect-[16/9] w-full overflow-hidden rounded-md border-4',
-          isCoachMode ? 'max-w-[1440px]' : 'max-w-[1160px]',
+          isCoachMode || isTacticalPanelCollapsed ? 'max-w-[1600px]' : 'max-w-[1160px]',
           isEditMode ? 'touch-none' : '',
         ].join(' ')}
         onPointerDown={handleBoardPointerDown}
