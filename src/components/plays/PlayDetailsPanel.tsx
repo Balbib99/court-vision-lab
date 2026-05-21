@@ -1,9 +1,10 @@
-import type { Play, Player, PlayStep } from '../../types/play'
+import type { DrawingTool, Play, Player, PlayStep } from '../../types/play'
 import { PlaySelector } from './PlaySelector'
 
 type PlayDetailsPanelProps = {
   activeStep?: PlayStep
   activeStepIndex: number
+  activeTool?: DrawingTool
   onSelectPlay: (playId: string) => void
   play: Play
   plays: Play[]
@@ -13,15 +14,18 @@ type PlayDetailsPanelProps = {
   canEditTimeline?: boolean
   onAssignBall: () => void
   onAddStep?: () => void
+  onClearStepAnnotations?: () => void
   onDeleteStep?: () => void
   onEditStepDescription?: () => void
   onRenameStep?: () => void
+  onSelectTool?: (tool: DrawingTool) => void
   onUpdateStep?: () => void
 }
 
 export function PlayDetailsPanel({
   activeStep,
   activeStepIndex,
+  activeTool = 'select',
   onSelectPlay,
   play,
   plays,
@@ -31,9 +35,11 @@ export function PlayDetailsPanel({
   canEditTimeline = false,
   onAssignBall,
   onAddStep,
+  onClearStepAnnotations,
   onDeleteStep,
   onEditStepDescription,
   onRenameStep,
+  onSelectTool,
   onUpdateStep,
 }: PlayDetailsPanelProps) {
   const selectedPlayerHasBall = Boolean(selectedPlayer && selectedPlayer.id === ballCarrierId)
@@ -139,6 +145,49 @@ export function PlayDetailsPanel({
           >
             Delete Step
           </button>
+          <button
+            type="button"
+            onClick={onClearStepAnnotations}
+            disabled={!canEditTimeline || (activeStep?.annotations ?? []).length === 0}
+            className="panel col-span-2 rounded-md border px-3 py-2 text-xs font-bold text-[var(--text-muted)] transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-40"
+            aria-label="Clear annotations for current step"
+            title={(activeStep?.annotations ?? []).length === 0 ? 'No annotations on this step' : 'Clear annotations for current step'}
+          >
+            Clear Annotations
+          </button>
+        </div>
+      </div>
+
+      <div className="annotation-tools tactical-border mt-5 border-t pt-5 lg:hidden">
+        <h3 className="text-soft font-mono text-[11px] uppercase tracking-[0.16em]">Drawing Tools</h3>
+        <div className="mt-3 grid grid-cols-4 gap-2">
+          {[
+            { label: 'Move', tool: 'movement' },
+            { label: 'Pass', tool: 'pass' },
+            { label: 'Screen', tool: 'screen' },
+            { label: 'Erase', tool: 'erase' },
+          ].map((item) => {
+            const tool = item.tool as DrawingTool
+            const disabled = !canEditTimeline || (tool !== 'select' && !isEditMode)
+            const isActive = activeTool === tool
+
+            return (
+              <button
+                key={tool}
+                type="button"
+                onClick={() => onSelectTool?.(tool)}
+                disabled={disabled}
+                className={[
+                  'rounded-md border px-2 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.08em] transition disabled:cursor-not-allowed disabled:opacity-40',
+                  isActive ? 'accent-badge' : 'panel text-[var(--text-muted)] hover:bg-[var(--accent-muted)]',
+                ].join(' ')}
+                aria-label={disabled ? 'Duplicate this play to edit annotations' : item.label}
+                title={disabled ? 'Duplicate this play to edit annotations' : item.label}
+              >
+                {item.label}
+              </button>
+            )
+          })}
         </div>
       </div>
 

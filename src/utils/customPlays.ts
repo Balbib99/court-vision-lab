@@ -1,4 +1,4 @@
-import type { Play, Player, PlayStep, Position } from '../types/play'
+import type { AnnotationType, Play, Player, PlayStep, Position, TacticalAnnotation } from '../types/play'
 import { createBoardState, normalizeBoardState } from './boardState'
 import { clampPosition } from './positions'
 
@@ -41,6 +41,41 @@ const normalizePosition = (value: unknown): Position | undefined => {
   }
 
   return clampPosition({ x: value.x, y: value.y })
+}
+
+const annotationTypes: AnnotationType[] = ['movement', 'pass', 'screen']
+
+export const createAnnotationId = (type: AnnotationType) =>
+  `annotation-${type}-${Date.now().toString(36)}`
+
+const normalizeAnnotation = (value: unknown): TacticalAnnotation | undefined => {
+  if (!isRecord(value) || typeof value.id !== 'string' || !annotationTypes.includes(value.type as AnnotationType)) {
+    return undefined
+  }
+
+  const type = value.type as AnnotationType
+  const from = normalizePosition(value.from)
+  const to = normalizePosition(value.to)
+  const position = normalizePosition(value.position)
+
+  if ((type === 'movement' || type === 'pass') && (!from || !to)) {
+    return undefined
+  }
+
+  if (type === 'screen' && !position) {
+    return undefined
+  }
+
+  return {
+    id: value.id,
+    type,
+    from,
+    to,
+    position,
+    label: typeof value.label === 'string' ? value.label : undefined,
+    color: typeof value.color === 'string' ? value.color : undefined,
+    createdAt: typeof value.createdAt === 'string' ? value.createdAt : new Date().toISOString(),
+  }
 }
 
 const asCustomPlay = (play: Play): Play => {
@@ -156,6 +191,7 @@ export const duplicatePlayAsCustom = (play: Play, name: string): Play =>
       movements: step.movements.map((movement) => ({ ...movement, to: { ...movement.to } })),
       ball: step.ball ? { ...step.ball, position: step.ball.position ? { ...step.ball.position } : undefined } : undefined,
       ballOwnerId: step.ballOwnerId,
+      annotations: step.annotations?.map((annotation) => ({ ...annotation })),
       playerPositions: step.playerPositions
         ? Object.fromEntries(Object.entries(step.playerPositions).map(([playerId, position]) => [playerId, { ...position }]))
         : undefined,
@@ -237,6 +273,12 @@ export const normalizeCustomPlay = (value: unknown): Play | undefined => {
         return positions
       }, {})
       : undefined
+    const annotations = Array.isArray(step.annotations)
+      ? step.annotations.flatMap((annotation) => {
+        const normalizedAnnotation = normalizeAnnotation(annotation)
+        return normalizedAnnotation ? [normalizedAnnotation] : []
+      })
+      : undefined
 
     return [{
       id: typeof step.id === 'string' ? step.id : `custom-step-${index + 1}`,
@@ -247,6 +289,7 @@ export const normalizeCustomPlay = (value: unknown): Play | undefined => {
       ballOwnerId: ballCarrierId,
       movements,
       playerPositions: playerPositions && Object.keys(playerPositions).length > 0 ? playerPositions : undefined,
+      annotations,
       createdAt: typeof step.createdAt === 'string' ? step.createdAt : undefined,
       updatedAt: typeof step.updatedAt === 'string' ? step.updatedAt : undefined,
     }]

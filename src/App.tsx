@@ -9,7 +9,8 @@ import { useCustomPlays } from './hooks/useCustomPlays'
 import { useCourtEditor } from './hooks/useCourtEditor'
 import { usePlayAnimation } from './hooks/usePlayAnimation'
 import { useTheme } from './hooks/useTheme'
-import { createCustomPlayFromBoard, createStepSnapshot, duplicatePlayAsCustom, isCustomPlay } from './utils/customPlays'
+import type { DrawingTool, TacticalAnnotation } from './types/play'
+import { createAnnotationId, createCustomPlayFromBoard, createStepSnapshot, duplicatePlayAsCustom, isCustomPlay } from './utils/customPlays'
 import { createBoardState } from './utils/boardState'
 import { getBallHandler, getInitialPositions } from './utils/positions'
 import { loadBoardState, saveBoardState } from './utils/storage'
@@ -22,6 +23,7 @@ function App() {
   const [selectedPlayId, setSelectedPlayId] = useState(initialBoardState?.selectedPlayId ?? defaultPlay.id)
   const [saveStatus, setSaveStatus] = useState<BoardSaveStatus>('idle')
   const [playbookMessage, setPlaybookMessage] = useState('')
+  const [activeTool, setActiveTool] = useState<DrawingTool>('select')
   const saveStatusTimerRef = useRef<number | undefined>(undefined)
   const playbookMessageTimerRef = useRef<number | undefined>(undefined)
   const didPrimeAutosaveRef = useRef(false)
@@ -69,6 +71,7 @@ function App() {
   const courtPositions = isEditMode ? editedPositions : positions
   const courtBallPosition = isEditMode ? editedBallPosition : ballPosition
   const selectedPlayIsCustom = isCustomPlay(selectedPlay)
+  const canUseDrawingTools = isEditMode && selectedPlayIsCustom
   const currentEditorPlayers = isEditMode ? editedPlayers : selectedPlay.initialPlayers
   const currentBallCarrierId = isEditMode ? ballCarrierId : activeStep?.ballOwnerId ?? activeStep?.ball?.carrierId ?? getBallHandler(selectedPlay)?.id
 
@@ -222,6 +225,75 @@ function App() {
     return updatedPlay
   }
 
+  const handleToggleEditMode = () => {
+    if (isEditMode) {
+      setActiveTool('select')
+    }
+
+    toggleEditMode()
+  }
+
+  const handleSelectTool = (tool: DrawingTool) => {
+    setActiveTool((currentTool) => (currentTool === tool ? 'select' : tool))
+  }
+
+  const updateActiveStepAnnotations = (annotations: TacticalAnnotation[], message: string) => {
+    if (!selectedPlayIsCustom || !activeStep) {
+      return
+    }
+
+    const nextPlay = {
+      ...selectedPlay,
+      steps: selectedPlay.steps.map((step, index) => (
+        index === activeStepIndex ? { ...step, annotations, updatedAt: new Date().toISOString() } : step
+      )),
+    }
+    persistUpdatedCustomPlay(nextPlay)
+    showPlaybookMessage(message)
+  }
+
+  const handleCreateAnnotation = (annotation: Omit<TacticalAnnotation, 'id' | 'createdAt'>) => {
+    if (!canUseDrawingTools || !activeStep) {
+      if (!selectedPlayIsCustom) {
+        showPlaybookMessage('Duplicate this play to edit annotations')
+      }
+      return
+    }
+
+    updateActiveStepAnnotations([
+      ...(activeStep.annotations ?? []),
+      {
+        ...annotation,
+        id: createAnnotationId(annotation.type),
+        createdAt: new Date().toISOString(),
+      },
+    ], 'Annotation added')
+  }
+
+  const handleEraseAnnotation = (annotationId: string) => {
+    if (!canUseDrawingTools || !activeStep) {
+      return
+    }
+
+    updateActiveStepAnnotations(
+      (activeStep.annotations ?? []).filter((annotation) => annotation.id !== annotationId),
+      'Annotation erased',
+    )
+  }
+
+  const handleClearStepAnnotations = () => {
+    if (!canUseDrawingTools || !activeStep || (activeStep.annotations ?? []).length === 0) {
+      return
+    }
+
+    const confirmed = window.confirm('Clear annotations for this step?')
+    if (!confirmed) {
+      return
+    }
+
+    updateActiveStepAnnotations([], 'Annotations cleared')
+  }
+
   const handleAddStep = () => {
     if (!selectedPlayIsCustom) {
       showPlaybookMessage('Duplicate this play to edit its timeline')
@@ -264,6 +336,7 @@ function App() {
         description: activeStep.description,
       }),
       id: activeStep.id,
+      annotations: activeStep.annotations,
       createdAt: activeStep.createdAt,
       updatedAt: new Date().toISOString(),
     }
@@ -460,6 +533,7 @@ function App() {
 
   return (
     <AppShell
+      activeTool={activeTool}
       activePlay={selectedPlay}
       activeStep={activeStep}
       activeStepIndex={activeStepIndex}
@@ -469,6 +543,7 @@ function App() {
       canClearBoard={canClearBoard}
       canDeleteCustomPlay={selectedPlayIsCustom}
       canEditTimeline={selectedPlayIsCustom}
+      canUseDrawingTools={canUseDrawingTools}
       clearBoardLabel={clearBoardLabel}
       isPlaying={isPlaying}
       isEditMode={isEditMode}
@@ -486,8 +561,9 @@ function App() {
       onResetToPlayDefaults={handleResetToPlayDefaults}
       onSaveAsCustomPlay={handleSaveAsCustomPlay}
       onSaveBoard={handleSaveBoard}
+      onSelectTool={handleSelectTool}
       onStepSelect={handleStepSelect}
-      onToggleEditMode={toggleEditMode}
+      onToggleEditMode={handleToggleEditMode}
       onToggleTheme={toggleTheme}
       playbookMessage={playbookMessage}
       saveStatus={saveStatus}
@@ -507,8 +583,13 @@ function App() {
           ballPosition={courtBallPosition}
           activeStep={activeStep}
           activeStepIndex={activeStepIndex}
+          activeTool={activeTool}
+          annotations={activeStep?.annotations}
           ballCarrierId={isEditMode ? ballCarrierId : undefined}
+          canEditAnnotations={canUseDrawingTools}
           isEditMode={isEditMode}
+          onCreateAnnotation={handleCreateAnnotation}
+          onEraseAnnotation={handleEraseAnnotation}
           onMovePlayer={updatePlayerPosition}
           onSelectPlayer={selectPlayer}
           players={isEditMode ? editedPlayers : undefined}
@@ -517,14 +598,17 @@ function App() {
         <PlayDetailsPanel
           activeStep={activeStep}
           activeStepIndex={activeStepIndex}
+          activeTool={activeTool}
           ballCarrierId={ballCarrierId}
           canEditTimeline={selectedPlayIsCustom}
+          onClearStepAnnotations={handleClearStepAnnotations}
           isEditMode={isEditMode}
           onAddStep={handleAddStep}
           onAssignBall={assignBallToSelected}
           onDeleteStep={handleDeleteStep}
           onEditStepDescription={handleEditStepDescription}
           onRenameStep={handleRenameStep}
+          onSelectTool={handleSelectTool}
           onSelectPlay={handleSelectPlay}
           onUpdateStep={handleUpdateStep}
           play={selectedPlay}

@@ -26,6 +26,20 @@ export type BallState = {
   position?: Position
 }
 
+export type AnnotationType = 'movement' | 'pass' | 'screen'
+export type DrawingTool = 'select' | 'movement' | 'pass' | 'screen' | 'erase'
+
+export type TacticalAnnotation = {
+  id: string
+  type: AnnotationType
+  from?: Position
+  to?: Position
+  position?: Position
+  label?: string
+  color?: string
+  createdAt: string
+}
+
 export type PlayStep = {
   id: string
   title: string
@@ -35,6 +49,7 @@ export type PlayStep = {
   ball?: BallState
   playerPositions?: Record<string, Position>
   ballOwnerId?: string
+  annotations?: TacticalAnnotation[]
   createdAt?: string
   updatedAt?: string
 }

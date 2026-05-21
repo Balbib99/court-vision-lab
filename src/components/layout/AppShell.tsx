@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import type { Theme } from '../../hooks/useTheme'
-import type { Play, Player, PlayStep } from '../../types/play'
+import type { DrawingTool, Play, Player, PlayStep } from '../../types/play'
 import { BottomControls } from './BottomControls'
 import { RightToolbar } from './RightToolbar'
 import { Sidebar } from './Sidebar'
@@ -10,12 +10,14 @@ type AppShellProps = {
   activePlay: Play
   activeStep?: PlayStep
   activeStepIndex: number
+  activeTool: DrawingTool
   ballCarrierId?: string
   canAddDefense: boolean
   canAddOffense: boolean
   canClearBoard: boolean
   canDeleteCustomPlay: boolean
   canEditTimeline: boolean
+  canUseDrawingTools: boolean
   clearBoardLabel: string
   children: ReactNode
   isPlaying: boolean
@@ -30,6 +32,7 @@ type AppShellProps = {
   onResetToPlayDefaults: () => void
   onSaveAsCustomPlay: () => void
   onSaveBoard: () => void
+  onSelectTool: (tool: DrawingTool) => void
   onToggleTheme: () => void
   onToggleEditMode: () => void
   onNextStep: () => void
@@ -48,12 +51,14 @@ export function AppShell({
   activePlay,
   activeStep,
   activeStepIndex,
+  activeTool,
   ballCarrierId,
   canAddDefense,
   canAddOffense,
   canClearBoard,
   canDeleteCustomPlay,
   canEditTimeline,
+  canUseDrawingTools,
   clearBoardLabel,
   children,
   isPlaying,
@@ -68,6 +73,7 @@ export function AppShell({
   onResetToPlayDefaults,
   onSaveAsCustomPlay,
   onSaveBoard,
+  onSelectTool,
   onNextStep,
   onPlayFullSequence,
   onPreviousStep,
@@ -124,14 +130,17 @@ export function AppShell({
             </div>
           </div>
           <RightToolbar
+            activeTool={activeTool}
             ballCarrierId={ballCarrierId}
             canAddDefense={canAddDefense}
             canAddOffense={canAddOffense}
+            canUseDrawingTools={canUseDrawingTools}
             isEditMode={isEditMode}
             onAddDefense={onAddDefense}
             onAddOffense={onAddOffense}
             onAssignBall={onAssignBall}
             onRemoveSelectedPlayer={onRemoveSelectedPlayer}
+            onSelectTool={onSelectTool}
             onToggleEditMode={onToggleEditMode}
             selectedPlayer={selectedPlayer}
           />

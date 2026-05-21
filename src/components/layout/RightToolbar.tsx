@@ -1,34 +1,34 @@
-import { ArrowRight, Eraser, MousePointer2, Pencil, Route, Trash2 } from 'lucide-react'
-import type { Player } from '../../types/play'
-
-const mainTools = [
-  { label: 'Pass tool coming soon', icon: ArrowRight, active: false },
-  { label: 'Movement route coming soon', icon: Route, active: false },
-  { label: 'Erase coming soon', icon: Eraser, active: false },
-]
+import { ArrowUpRight, CircleArrowRight, CirclePlay, Eraser, MousePointer2, Pencil, Shield, Trash2 } from 'lucide-react'
+import type { DrawingTool, Player } from '../../types/play'
 
 type RightToolbarProps = {
+  activeTool: DrawingTool
   ballCarrierId?: string
   canAddDefense: boolean
   canAddOffense: boolean
+  canUseDrawingTools: boolean
   isEditMode: boolean
   onAddDefense: () => void
   onAddOffense: () => void
   onAssignBall: () => void
   onRemoveSelectedPlayer: () => void
+  onSelectTool: (tool: DrawingTool) => void
   onToggleEditMode: () => void
   selectedPlayer?: Player
 }
 
 export function RightToolbar({
+  activeTool,
   ballCarrierId,
   canAddDefense,
   canAddOffense,
+  canUseDrawingTools,
   isEditMode,
   onAddDefense,
   onAddOffense,
   onAssignBall,
   onRemoveSelectedPlayer,
+  onSelectTool,
   onToggleEditMode,
   selectedPlayer,
 }: RightToolbarProps) {
@@ -45,6 +45,16 @@ export function RightToolbar({
       ? 'Remove selected player'
       : 'Select a player first'
   const deleteDisabled = !isEditMode || !selectedPlayer
+  const toolbarButtonClass =
+    'toolbar-button flex h-12 w-12 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-40'
+
+  const drawingTools: Array<{ label: string; tool: Exclude<DrawingTool, 'select'>; icon: typeof MousePointer2 }> = [
+    { label: 'Draw movement arrow', tool: 'movement', icon: ArrowUpRight },
+    { label: 'Draw pass line', tool: 'pass', icon: CircleArrowRight },
+    { label: 'Place screen marker', tool: 'screen', icon: Shield },
+    { label: 'Erase annotation', tool: 'erase', icon: Eraser },
+  ]
+
   const creationTools = [
     {
       disabled: !isEditMode || !canAddOffense,
@@ -67,8 +77,6 @@ export function RightToolbar({
       text: '+D',
     },
   ]
-  const toolbarButtonClass =
-    'toolbar-button flex h-12 w-12 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-40'
 
   return (
     <div className="right-toolbar pointer-events-none absolute right-4 top-1/2 z-40 hidden -translate-y-1/2 flex-col gap-4 lg:flex">
@@ -83,24 +91,35 @@ export function RightToolbar({
           aria-label={isEditMode ? 'Switch to play mode' : 'Switch to edit mode'}
           title={isEditMode ? 'Play Mode' : 'Edit Mode'}
         >
-          {isEditMode ? <MousePointer2 size={21} aria-hidden="true" /> : <Pencil size={21} aria-hidden="true" />}
+          {isEditMode ? <CirclePlay size={21} aria-hidden="true" /> : <Pencil size={21} aria-hidden="true" />}
         </button>
 
-        {mainTools.map(({ label, icon: Icon, active }) => (
-          <button
-            key={label}
-            type="button"
-            disabled={!active}
-            className={[
-              toolbarButtonClass,
-              active ? 'accent-bg shadow-[0_0_18px_var(--accent-muted)]' : 'text-muted opacity-75',
-            ].join(' ')}
-            aria-label={label}
-            title={label}
-          >
-            <Icon size={21} aria-hidden="true" />
-          </button>
-        ))}
+        {drawingTools.map(({ icon: Icon, label, tool }) => {
+          const disabled = !isEditMode || !canUseDrawingTools
+          const title = !isEditMode
+            ? 'Available in Edit Mode'
+            : disabled
+              ? 'Duplicate this play to edit annotations'
+              : label
+          const isActive = activeTool === tool
+
+          return (
+            <button
+              key={tool}
+              type="button"
+              onClick={() => onSelectTool(tool)}
+              disabled={disabled}
+              className={[
+                toolbarButtonClass,
+                isActive ? 'accent-bg shadow-[0_0_18px_var(--accent-muted)]' : 'text-muted hover:bg-[var(--accent-muted)]',
+              ].join(' ')}
+              aria-label={title}
+              title={title}
+            >
+              <Icon size={21} aria-hidden="true" />
+            </button>
+          )
+        })}
 
         <div className="tactical-border my-1 h-px w-8 self-center border-t" />
 
@@ -150,7 +169,7 @@ export function RightToolbar({
           aria-label={assignBallLabel}
           title={assignBallLabel}
         >
-          +🏀
+          <span aria-hidden="true">+{String.fromCodePoint(0x1f3c0)}</span>
         </button>
       </div>
     </div>
