@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { GuideSection, GuideTask } from '../../data/guides'
+import { getBestTourCardPosition, getSpotlightOverlayPieces, getSpotlightRect } from '../../utils/tourPosition'
+import type { TourRect } from '../../utils/tourPosition'
 
 type GuidedTourProps = {
   currentStepIndex: number
@@ -10,15 +12,12 @@ type GuidedTourProps = {
   onSectionChange: (section: GuideSection) => void
 }
 
-type HighlightRect = {
-  height: number
-  left: number
-  top: number
-  width: number
-}
-
 export function GuidedTour({ currentStepIndex, guide, onBack, onClose, onNext, onSectionChange }: GuidedTourProps) {
-  const [rect, setRect] = useState<HighlightRect>()
+  const [rect, setRect] = useState<TourRect>()
+  const [viewport, setViewport] = useState(() => ({
+    height: window.innerHeight,
+    width: window.innerWidth,
+  }))
   const step = guide?.steps[currentStepIndex]
   const isLastStep = Boolean(guide && currentStepIndex === guide.steps.length - 1)
 
@@ -41,6 +40,7 @@ export function GuidedTour({ currentStepIndex, guide, onBack, onClose, onNext, o
     }
 
     const updateRect = () => {
+      setViewport({ height: window.innerHeight, width: window.innerWidth })
       const element = document.querySelector(step.target ?? '')
       if (!(element instanceof HTMLElement)) {
         setRect(undefined)
@@ -70,35 +70,18 @@ export function GuidedTour({ currentStepIndex, guide, onBack, onClose, onNext, o
     }
   }, [step])
 
-  const cardStyle = useMemo(() => {
-    if (!rect || step?.placement === 'center') {
-      return {
-        left: '50%',
-        top: '50%',
-        transform: 'translate(-50%, -50%)',
-      }
-    }
-
-    const viewportWidth = window.innerWidth
-    const viewportHeight = window.innerHeight
-    const cardWidth = Math.min(380, viewportWidth - 32)
-    const left = Math.min(Math.max(16, rect.left + rect.width + 18), viewportWidth - cardWidth - 16)
-    const top = Math.min(Math.max(16, rect.top), viewportHeight - 260)
-
-    if (step?.placement === 'left') {
-      return { left: Math.max(16, rect.left - cardWidth - 18), top }
-    }
-
-    if (step?.placement === 'top') {
-      return { left: Math.min(Math.max(16, rect.left), viewportWidth - cardWidth - 16), top: Math.max(16, rect.top - 244) }
-    }
-
-    if (step?.placement === 'bottom') {
-      return { left: Math.min(Math.max(16, rect.left), viewportWidth - cardWidth - 16), top: Math.min(viewportHeight - 260, rect.top + rect.height + 18) }
-    }
-
-    return { left, top }
-  }, [rect, step?.placement])
+  const spotlightRect = useMemo(
+    () => rect ? getSpotlightRect(rect, viewport, 12) : undefined,
+    [rect, viewport],
+  )
+  const overlayPieces = useMemo(
+    () => spotlightRect ? getSpotlightOverlayPieces(spotlightRect, viewport) : undefined,
+    [spotlightRect, viewport],
+  )
+  const cardPosition = useMemo(
+    () => getBestTourCardPosition(spotlightRect, step?.placement, viewport),
+    [spotlightRect, step?.placement, viewport],
+  )
 
   if (!guide || !step) {
     return null
@@ -106,19 +89,41 @@ export function GuidedTour({ currentStepIndex, guide, onBack, onClose, onNext, o
 
   return (
     <div className="fixed inset-0 z-[90] pointer-events-none">
-      <div className="absolute inset-0 bg-[rgba(2,6,23,0.36)] backdrop-blur-[2px]" />
-      {rect && (
+      {overlayPieces ? (
+        overlayPieces.map((piece, index) => (
+          <div
+            key={`${piece.left}-${piece.top}-${index}`}
+            className="tour-overlay-piece pointer-events-none fixed"
+            style={{
+              height: piece.height,
+              left: piece.left,
+              top: piece.top,
+              width: piece.width,
+            }}
+          />
+        ))
+      ) : (
+        <div className="tour-overlay-piece pointer-events-none absolute inset-0" />
+      )}
+      {spotlightRect && (
         <div
-          className="tour-highlight pointer-events-none fixed rounded-xl border-2 border-[var(--accent)] shadow-[0_0_0_9999px_rgba(2,6,23,0.18),0_0_28px_var(--accent-muted)]"
+          className="tour-highlight pointer-events-none fixed rounded-xl border-2 border-[var(--accent)]"
           style={{
-            height: rect.height + 14,
-            left: rect.left - 7,
-            top: rect.top - 7,
-            width: rect.width + 14,
+            height: spotlightRect.height,
+            left: spotlightRect.left,
+            top: spotlightRect.top,
+            width: spotlightRect.width,
           }}
         />
       )}
-      <section className="panel-floating pointer-events-auto fixed w-[min(380px,calc(100vw-32px))] rounded-2xl border p-4" style={cardStyle}>
+      <section
+        className="panel-floating pointer-events-auto fixed w-[min(380px,calc(100vw-32px))] rounded-2xl border p-4"
+        style={{
+          left: cardPosition.left,
+          top: cardPosition.top,
+          transform: cardPosition.transform,
+        }}
+      >
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="accent-text font-mono text-[10px] font-bold uppercase tracking-[0.14em]">

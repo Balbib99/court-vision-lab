@@ -180,7 +180,17 @@ a:focus-visible {
   background: color-mix(in srgb, var(--accent-muted) 74%, transparent);
 }
 
+.tour-overlay-piece {
+  background: rgba(2, 6, 23, 0.38);
+  backdrop-filter: blur(3px) saturate(95%);
+  -webkit-backdrop-filter: blur(3px) saturate(95%);
+}
+
 .tour-highlight {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent),
+    0 0 26px var(--accent-muted),
+    inset 0 0 22px color-mix(in srgb, var(--accent-muted) 58%, transparent);
   animation: tour-pulse 1.6s ease-in-out infinite;
 }
 
