@@ -1,29 +1,38 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Court } from './components/court/Court'
+import { GuidedTour } from './components/help/GuidedTour'
+import { HelpCenter } from './components/help/HelpCenter'
 import { AppShell } from './components/layout/AppShell'
 import type { AppSection } from './components/layout/Sidebar'
 import type { BoardSaveStatus } from './components/layout/TopBar'
+import { TemplatesModal } from './components/layout/TemplatesModal'
 import { PlayDetailsPanel } from './components/plays/PlayDetailsPanel'
 import { PlaybookView } from './components/views/PlaybookView'
 import { RosterView } from './components/views/RosterView'
 import { StatsView } from './components/views/StatsView'
 import { defaultPlay, plays } from './data/plays'
+import { boardTemplates, type BoardTemplate } from './data/boardTemplates'
+import { guideTasks } from './data/guides'
+import type { GuideSection } from './data/guides'
 import { demoRoster } from './data/roster'
 import { useCustomPlays } from './hooks/useCustomPlays'
 import { useCourtEditor } from './hooks/useCourtEditor'
 import { useExportCourt } from './hooks/useExportCourt'
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { usePlayAnimation } from './hooks/usePlayAnimation'
 import { useTheme } from './hooks/useTheme'
-import type { DrawingTool, TacticalAnnotation } from './types/play'
+import { useUndoRedo } from './hooks/useUndoRedo'
+import type { DrawingTool, Play, TacticalAnnotation } from './types/play'
 import { createAnnotationId, createCustomPlayFromBoard, createStepSnapshot, duplicatePlayAsCustom, isCustomPlay } from './utils/customPlays'
-import { createBoardState } from './utils/boardState'
+import { createBoardState, type SavedBoardState } from './utils/boardState'
 import { getBallHandler, getInitialPositions } from './utils/positions'
 import { loadBoardState, saveBoardState } from './utils/storage'
+import { createJsonFileName, createPlaybookExport, createPlayExport, downloadJson, parseImportedPlays } from './utils/playImportExport'
 
 function App() {
   const { theme, toggleTheme } = useTheme()
-  const { addCustomPlay, customPlays, deleteCustomPlay, updateCustomPlay } = useCustomPlays()
+  const { addCustomPlay, addCustomPlays, customPlays, deleteCustomPlay, updateCustomPlay } = useCustomPlays()
   const allPlays = useMemo(() => [...plays, ...customPlays], [customPlays])
   const [initialBoardState] = useState(() => loadBoardState([...plays, ...customPlays]))
   const [selectedPlayId, setSelectedPlayId] = useState(initialBoardState?.selectedPlayId ?? defaultPlay.id)
@@ -32,8 +41,13 @@ function App() {
   const [activeTool, setActiveTool] = useState<DrawingTool>('select')
   const [activeSection, setActiveSection] = useState<AppSection>('board')
   const [isCoachMode, setIsCoachMode] = useState(false)
+  const [isHelpOpen, setIsHelpOpen] = useState(false)
+  const [activeGuideId, setActiveGuideId] = useState<string>()
+  const [activeGuideStepIndex, setActiveGuideStepIndex] = useState(0)
+  const [isTemplatesOpen, setIsTemplatesOpen] = useState(false)
   const [isTacticalPanelCollapsed, setIsTacticalPanelCollapsed] = useState(() => window.localStorage.getItem('court-vision-lab:tactical-panel-collapsed') === 'true')
   const courtExportRef = useRef<HTMLDivElement>(null)
+  const importInputRef = useRef<HTMLInputElement>(null)
   const saveStatusTimerRef = useRef<number | undefined>(undefined)
   const playbookMessageTimerRef = useRef<number | undefined>(undefined)
   const didPrimeAutosaveRef = useRef(false)
@@ -71,6 +85,7 @@ function App() {
     resetEditedPositions,
     resetForPlay,
     resetToPlayDefaults,
+    restoreBoardState,
     removeSelectedPlayer,
     selectedPlayer,
     selectedPlayerId,
@@ -78,7 +93,16 @@ function App() {
     toggleEditMode,
     updatePlayerPosition,
   } = useCourtEditor(selectedPlay, pause, initialBoardState)
+  type HistorySnapshot = {
+    boardState: SavedBoardState
+    play?: Play
+    selectedPlayId: string
+  }
   const selectedPlayIsCustom = isCustomPlay(selectedPlay)
+  const activeGuide = useMemo(
+    () => guideTasks.find((guide) => guide.id === activeGuideId),
+    [activeGuideId],
+  )
   const effectiveIsEditMode = isEditMode && !isCoachMode
   const courtPositions = effectiveIsEditMode ? editedPositions : positions
   const courtBallPosition = effectiveIsEditMode ? editedBallPosition : ballPosition
@@ -147,6 +171,30 @@ function App() {
     positions,
     selectedPlay,
   ])
+
+  const history = useUndoRedo<HistorySnapshot>(40)
+
+  const createHistorySnapshot = useCallback((): HistorySnapshot => ({
+    boardState: createCurrentBoardState(),
+    play: selectedPlayIsCustom ? selectedPlay : undefined,
+    selectedPlayId: selectedPlay.id,
+  }), [createCurrentBoardState, selectedPlay, selectedPlayIsCustom])
+
+  const restoreHistorySnapshot = useCallback((snapshot: HistorySnapshot) => {
+    if (snapshot.play && isCustomPlay(snapshot.play)) {
+      updateCustomPlay(snapshot.play)
+    }
+
+    setSelectedPlayId(snapshot.selectedPlayId)
+    restoreBoardState(snapshot.boardState)
+    goToStep(snapshot.boardState.currentStepIndex)
+    saveBoardState(snapshot.boardState)
+    showPlaybookMessage('History restored')
+  }, [goToStep, restoreBoardState, showPlaybookMessage, updateCustomPlay])
+
+  const recordHistory = useCallback(() => {
+    history.record(createHistorySnapshot())
+  }, [createHistorySnapshot, history])
 
   const handleSaveBoard = useCallback(() => {
     saveBoardState(createCurrentBoardState())
@@ -287,8 +335,92 @@ function App() {
     void exportCourt(courtExportRef.current, selectedPlay.name, activeStepIndex)
   }
 
+  const handleExportJson = () => {
+    downloadJson(createPlayExport(selectedPlay), createJsonFileName(selectedPlay.name))
+    showPlaybookMessage('JSON exported')
+  }
+
+  const handleExportPlaybook = () => {
+    downloadJson(createPlaybookExport(customPlays), 'court-vision-lab-playbook-backup.json')
+    showPlaybookMessage('Playbook exported')
+  }
+
+  const handleImportJsonClick = () => {
+    importInputRef.current?.click()
+  }
+
+  const handleImportJsonFile = async (file?: File) => {
+    if (!file) {
+      return
+    }
+
+    const result = parseImportedPlays(await file.text(), allPlays)
+    if (!result.ok) {
+      showPlaybookMessage(result.message)
+      return
+    }
+
+    addCustomPlays(result.plays)
+    const firstPlay = result.plays[0]
+    reset()
+    resetForPlay(firstPlay)
+    setSelectedPlayId(firstPlay.id)
+    saveBoardState(createDefaultStateForPlay(firstPlay))
+    setActiveSection('board')
+    showPlaybookMessage(result.plays.length === 1 ? 'Play imported' : 'Playbook imported')
+  }
+
+  const handleUndo = () => {
+    const snapshot = history.undo(createHistorySnapshot())
+    if (snapshot) {
+      restoreHistorySnapshot(snapshot)
+    }
+  }
+
+  const handleRedo = () => {
+    const snapshot = history.redo(createHistorySnapshot())
+    if (snapshot) {
+      restoreHistorySnapshot(snapshot)
+    }
+  }
+
   const handleSelectTool = (tool: DrawingTool) => {
     setActiveTool((currentTool) => (currentTool === tool ? 'select' : tool))
+  }
+
+  const handleStartGuide = (guideId: string) => {
+    setIsHelpOpen(false)
+    setActiveGuideId(guideId)
+    setActiveGuideStepIndex(0)
+  }
+
+  const handleCloseGuide = () => {
+    setActiveGuideId(undefined)
+    setActiveGuideStepIndex(0)
+  }
+
+  const handleGuideSectionChange = (section: GuideSection) => {
+    setActiveSection(section)
+  }
+
+  const handleAddPlayer = (team: 'offense' | 'defense') => {
+    recordHistory()
+    addPlayer(team)
+  }
+
+  const handleAssignBall = () => {
+    recordHistory()
+    assignBallToSelected()
+  }
+
+  const handleRemoveSelectedPlayer = () => {
+    recordHistory()
+    removeSelectedPlayer()
+  }
+
+  const handleMovePlayer = (playerId: string, position: { x: number; y: number }) => {
+    recordHistory()
+    updatePlayerPosition(playerId, position)
   }
 
   const updateActiveStepAnnotations = (annotations: TacticalAnnotation[], message: string) => {
@@ -296,6 +428,7 @@ function App() {
       return
     }
 
+    recordHistory()
     const nextPlay = {
       ...selectedPlay,
       steps: selectedPlay.steps.map((step, index) => (
@@ -359,6 +492,7 @@ function App() {
       return
     }
 
+    recordHistory()
     const description = window.prompt('Step description optional') ?? undefined
     const nextStep = createStepSnapshot({
       players: currentEditorPlayers,
@@ -381,6 +515,7 @@ function App() {
       return
     }
 
+    recordHistory()
     const nextStep = {
       ...createStepSnapshot({
         players: currentEditorPlayers,
@@ -413,6 +548,7 @@ function App() {
       return
     }
 
+    recordHistory()
     const nextSteps = selectedPlay.steps.filter((_, index) => index !== activeStepIndex)
     const nextStepIndex = Math.max(0, Math.min(activeStepIndex, nextSteps.length - 1))
     const nextPlay = { ...selectedPlay, steps: nextSteps }
@@ -431,6 +567,7 @@ function App() {
       return
     }
 
+    recordHistory()
     const nextTitle = title.trim() || 'New step'
     const nextPlay = {
       ...selectedPlay,
@@ -452,6 +589,7 @@ function App() {
       return
     }
 
+    recordHistory()
     const nextPlay = {
       ...selectedPlay,
       steps: selectedPlay.steps.map((step, index) => (
@@ -525,6 +663,7 @@ function App() {
       return
     }
 
+    recordHistory()
     deleteCustomPlay(playToDelete.id)
     reset()
     resetForPlay(defaultPlay)
@@ -535,7 +674,8 @@ function App() {
   }
 
   const handleLoadDemoRosterToCourt = () => {
-    const offenseRoster = demoRoster.filter((player) => player.teamSide === 'offense').slice(0, 5)
+    recordHistory()
+    const offenseRoster = demoRoster.filter((player) => player.status === 'active').slice(0, 5)
     const namedPlayers = selectedPlay.initialPlayers.map((player) => {
       if (player.team !== 'offense') {
         return player
@@ -550,14 +690,33 @@ function App() {
       return {
         ...player,
         name: rosterPlayer.name,
-        role: `${rosterPlayer.position} · ${rosterPlayer.role}`,
+        number: rosterPlayer.number,
+        role: `${rosterPlayer.position} - ${rosterPlayer.role}`,
+        rosterPlayerId: rosterPlayer.id,
+        tags: rosterPlayer.tags,
+        stats: {
+          defense: rosterPlayer.defense,
+          finishing: rosterPlayer.finishing,
+          passing: rosterPlayer.passing,
+          rating: rosterPlayer.rating,
+          rebounding: rosterPlayer.rebounding,
+          shooting: rosterPlayer.shooting,
+          speed: rosterPlayer.speed,
+          threePoint: rosterPlayer.threePoint,
+        },
       }
     })
 
-    applyStepSnapshot(namedPlayers, getInitialPositions(namedPlayers), getBallHandler(selectedPlay)?.id)
-    if (!isEditMode) {
-      toggleEditMode()
-    }
+    const rosterBoardState = createBoardState({
+      selectedPlayId: selectedPlay.id,
+      currentStepIndex: activeStepIndex,
+      players: namedPlayers,
+      positions: getInitialPositions(namedPlayers),
+      ballCarrierId: getBallHandler(selectedPlay)?.id,
+      isCustom: true,
+    })
+    restoreBoardState(rosterBoardState)
+    saveBoardState(rosterBoardState)
     setActiveSection('board')
     showPlaybookMessage('Demo roster loaded')
   }
@@ -578,6 +737,7 @@ function App() {
   }
 
   const handleResetToPlayDefaults = () => {
+    recordHistory()
     reset()
     resetToPlayDefaults()
     saveBoardState(createDefaultStateForPlay())
@@ -594,6 +754,7 @@ function App() {
       return
     }
 
+    recordHistory()
     reset()
     clearBoard()
     saveBoardState(createBoardState({
@@ -608,6 +769,7 @@ function App() {
   }
 
   const handleCreateEmptyBoard = () => {
+    recordHistory()
     reset()
     clearBoard()
     saveBoardState(createBoardState({
@@ -622,6 +784,61 @@ function App() {
     showPlaybookMessage('Empty board ready')
   }
 
+  const handleLoadTemplate = (template: BoardTemplate) => {
+    const confirmed = !isBoardCustom || window.confirm('Load this template? Unsaved board changes will be replaced.')
+    if (!confirmed) {
+      return
+    }
+
+    recordHistory()
+    reset()
+    const nextState = createBoardState({
+      selectedPlayId: selectedPlay.id,
+      currentStepIndex: 0,
+      players: template.players,
+      positions: getInitialPositions(template.players),
+      ballCarrierId: template.ballOwnerId,
+      isCustom: true,
+    })
+    restoreBoardState(nextState)
+    saveBoardState(nextState)
+    setIsTemplatesOpen(false)
+    setActiveSection('board')
+    showPlaybookMessage('Template loaded')
+  }
+
+  const handleAddCoachingPoint = () => {
+    if (!selectedPlayIsCustom) {
+      showPlaybookMessage('Duplicate this play to edit notes')
+      return
+    }
+
+    const note = window.prompt('Coaching point')
+    if (!note?.trim()) {
+      return
+    }
+
+    recordHistory()
+    persistUpdatedCustomPlay({
+      ...selectedPlay,
+      coachingPoints: [...(selectedPlay.coachingPoints ?? []), note.trim()],
+    })
+    showPlaybookMessage('Coaching point added')
+  }
+
+  const handleDeleteCoachingPoint = (index: number) => {
+    if (!selectedPlayIsCustom || !selectedPlay.coachingPoints?.[index]) {
+      return
+    }
+
+    recordHistory()
+    persistUpdatedCustomPlay({
+      ...selectedPlay,
+      coachingPoints: selectedPlay.coachingPoints.filter((_, itemIndex) => itemIndex !== index),
+    })
+    showPlaybookMessage('Coaching point deleted')
+  }
+
   const handleAddRosterPlayer = () => {
     showPlaybookMessage('Add Player coming soon')
   }
@@ -632,6 +849,24 @@ function App() {
     : editedPlayers.length > 0
       ? 'Clear Board'
       : 'Board is already clear'
+
+  useKeyboardShortcuts({
+    canUseDrawingTools,
+    onEscape: () => {
+      if (activeGuideId) handleCloseGuide()
+      else if (isHelpOpen) setIsHelpOpen(false)
+      else if (isTemplatesOpen) setIsTemplatesOpen(false)
+      else if (isCoachMode) setIsCoachMode(false)
+      else setActiveTool('select')
+    },
+    onNextStep: handleNextStep,
+    onPlayPause: playFullSequence,
+    onPreviousStep: handlePreviousStep,
+    onRedo: handleRedo,
+    onSaveBoard: handleSaveBoard,
+    onSelectTool: handleSelectTool,
+    onUndo: handleUndo,
+  })
 
   return (
     <AppShell
@@ -646,26 +881,34 @@ function App() {
       canClearBoard={canClearBoard}
       canDeleteCustomPlay={selectedPlayIsCustom}
       canEditTimeline={selectedPlayIsCustom}
+      canRedo={history.canRedo}
+      canUndo={history.canUndo}
       canUseDrawingTools={canUseDrawingTools}
       clearBoardLabel={clearBoardLabel}
       isPlaying={isPlaying}
       isCoachMode={isCoachMode}
       isEditMode={effectiveIsEditMode}
       exportStatus={exportStatus}
-      onAddDefense={() => addPlayer('defense')}
-      onAddOffense={() => addPlayer('offense')}
-      onAssignBall={assignBallToSelected}
+      onAddDefense={() => handleAddPlayer('defense')}
+      onAddOffense={() => handleAddPlayer('offense')}
+      onAssignBall={handleAssignBall}
       onClearBoard={handleClearBoard}
       onDeleteCustomPlay={handleDeleteCustomPlay}
       onDuplicatePlay={handleDuplicatePlay}
       onEnterCoachMode={handleEnterCoachMode}
       onExitCoachMode={handleExitCoachMode}
+      onExportJson={handleExportJson}
+      onExportPlaybook={handleExportPlaybook}
       onExportPng={handleExportPng}
+      onImportJson={handleImportJsonClick}
       onNextStep={handleNextStep}
+      onOpenHelp={() => setIsHelpOpen(true)}
+      onOpenTemplates={() => setIsTemplatesOpen(true)}
       onPlayFullSequence={playFullSequence}
       onPreviousStep={handlePreviousStep}
+      onRedo={handleRedo}
       onReset={handleReset}
-      onRemoveSelectedPlayer={removeSelectedPlayer}
+      onRemoveSelectedPlayer={handleRemoveSelectedPlayer}
       onResetToPlayDefaults={handleResetToPlayDefaults}
       onSaveAsCustomPlay={handleSaveAsCustomPlay}
       onSaveBoard={handleSaveBoard}
@@ -674,12 +917,33 @@ function App() {
       onStepSelect={handleStepSelect}
       onToggleEditMode={handleToggleEditMode}
       onToggleTheme={toggleTheme}
+      onUndo={handleUndo}
       playbookMessage={playbookMessage}
       saveStatus={saveStatus}
       selectedPlayer={selectedPlayer}
       stepCount={selectedPlay.steps.length}
       theme={theme}
     >
+      <input
+        ref={importInputRef}
+        type="file"
+        accept="application/json"
+        className="hidden"
+        onChange={(event) => {
+          void handleImportJsonFile(event.target.files?.[0])
+          event.currentTarget.value = ''
+        }}
+      />
+      <HelpCenter guides={guideTasks} isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} onStartGuide={handleStartGuide} />
+      <GuidedTour
+        currentStepIndex={activeGuideStepIndex}
+        guide={activeGuide}
+        onBack={() => setActiveGuideStepIndex((index) => Math.max(0, index - 1))}
+        onClose={handleCloseGuide}
+        onNext={() => setActiveGuideStepIndex((index) => Math.min((activeGuide?.steps.length ?? 1) - 1, index + 1))}
+        onSectionChange={handleGuideSectionChange}
+      />
+      <TemplatesModal isOpen={isTemplatesOpen} onClose={() => setIsTemplatesOpen(false)} onLoadTemplate={handleLoadTemplate} templates={boardTemplates} />
       {activeSection === 'board' ? <motion.div
         className={['relative flex flex-col xl:block', isCoachMode ? 'min-h-[calc(100dvh-64px)]' : 'min-h-[calc(100vh-80px)]'].join(' ')}
         initial={{ opacity: 0 }}
@@ -702,7 +966,7 @@ function App() {
             isTacticalPanelCollapsed={isTacticalPanelCollapsed}
             onCreateAnnotation={handleCreateAnnotation}
             onEraseAnnotation={handleEraseAnnotation}
-            onMovePlayer={updatePlayerPosition}
+            onMovePlayer={handleMovePlayer}
             onSelectPlayer={selectPlayer}
             players={effectiveIsEditMode ? editedPlayers : undefined}
             selectedPlayerId={selectedPlayerId}
@@ -715,10 +979,12 @@ function App() {
           ballCarrierId={ballCarrierId}
           canEditTimeline={selectedPlayIsCustom}
           isCollapsed={isTacticalPanelCollapsed}
+          onAddCoachingPoint={handleAddCoachingPoint}
           onClearStepAnnotations={handleClearStepAnnotations}
+          onDeleteCoachingPoint={handleDeleteCoachingPoint}
           isEditMode={isEditMode}
           onAddStep={handleAddStep}
-          onAssignBall={assignBallToSelected}
+          onAssignBall={handleAssignBall}
           onDeleteStep={handleDeleteStep}
           onEditStepDescription={handleEditStepDescription}
           onRenameStep={handleRenameStep}

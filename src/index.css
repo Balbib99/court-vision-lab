@@ -180,6 +180,23 @@ a:focus-visible {
   background: color-mix(in srgb, var(--accent-muted) 74%, transparent);
 }
 
+.tour-highlight {
+  animation: tour-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes tour-pulse {
+  0%,
+  100% {
+    opacity: 0.82;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.015);
+  }
+}
+
 .tactical-border {
   border-color: var(--border);
 }

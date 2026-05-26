@@ -24,8 +24,8 @@ function PlayerCard({ player }: { player: RosterPlayer }) {
           </div>
           <div>
             <h3 className="text-main text-lg font-black">{player.name}</h3>
-            <p className="text-muted mt-1 text-sm">{player.position} · {player.role}</p>
-            <p className="text-soft mt-1 font-mono text-[10px] uppercase tracking-[0.1em]">{player.height} · {player.weight}</p>
+            <p className="text-muted mt-1 text-sm">{player.position} - {player.role}</p>
+            <p className="text-soft mt-1 font-mono text-[10px] uppercase tracking-[0.1em]">{player.height} - {player.weight}</p>
           </div>
         </div>
         <div className="text-right">
@@ -75,7 +75,7 @@ export function RosterView({ players, onAddPlayer, onLoadRosterToCourt }: Roster
               <Plus size={17} aria-hidden="true" />
               Add Player
             </button>
-            <button type="button" onClick={onLoadRosterToCourt} className="accent-badge rounded-md px-4 py-3 text-sm font-bold" aria-label="Load demo roster to court" title="Load demo roster to court">
+            <button type="button" onClick={onLoadRosterToCourt} className="accent-badge rounded-md px-4 py-3 text-sm font-bold" aria-label="Load demo roster to court" title="Load demo roster to court" data-guide="load-roster-button">
               Load Demo Roster to Court
             </button>
           </div>

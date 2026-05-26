@@ -93,7 +93,7 @@ export function PlaybookView({ builtInPlays, customPlays, selectedPlayId, onCrea
           <div>
             <p className="accent-text font-mono text-xs font-bold uppercase tracking-[0.16em]">Playbook</p>
             <h2 className="text-main mt-2 font-display text-3xl tracking-[0.05em]">Play Library</h2>
-            <p className="text-muted mt-2 text-sm">{allPlays.length} total plays · {customPlays.length} custom saved</p>
+            <p className="text-muted mt-2 text-sm">{allPlays.length} total plays - {customPlays.length} custom saved</p>
           </div>
           <button type="button" onClick={onCreateEmptyBoard} className="accent-badge inline-flex items-center justify-center gap-2 rounded-md px-4 py-3 text-sm font-bold" aria-label="Start from empty board" title="Start from empty board">
             <FilePlus2 size={17} aria-hidden="true" />
@@ -114,7 +114,7 @@ export function PlaybookView({ builtInPlays, customPlays, selectedPlayId, onCrea
           </div>
         </div>
         {visiblePlays.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4" data-guide="playbook-grid">
             {visiblePlays.map((play) => (
               <PlayCard key={play.id} play={play} selectedPlayId={selectedPlayId} onDeletePlay={onDeletePlay} onDuplicatePlay={onDuplicatePlay} onLoadPlay={onLoadPlay} />
             ))}

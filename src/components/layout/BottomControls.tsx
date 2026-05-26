@@ -42,7 +42,7 @@ export function BottomControls({
     <div className={[
       'bottom-controls panel-floating z-30 mx-auto flex w-full flex-col rounded-2xl border px-4 py-3 sm:rounded-3xl sm:px-5',
       isCoachMode ? 'max-w-2xl gap-2' : 'max-w-4xl gap-3',
-    ].join(' ')}>
+    ].join(' ')} data-guide="bottom-controls">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="bottom-controls-primary flex items-center gap-2.5">
           <button
@@ -52,6 +52,7 @@ export function BottomControls({
             className="control-button accent-bg flex h-11 w-11 items-center justify-center rounded-full transition hover:brightness-110"
             aria-label={isEditMode ? 'Playback disabled in edit mode' : isPlaying ? 'Pause full sequence' : 'Play full sequence'}
             title={isEditMode ? 'Playback disabled in edit mode' : isPlaying ? 'Pause sequence' : 'Play full sequence'}
+            data-guide="play-sequence-button"
           >
             {isPlaying ? <Pause size={20} aria-hidden="true" /> : <Play size={20} aria-hidden="true" />}
           </button>
@@ -101,7 +102,7 @@ export function BottomControls({
         </div>
       </div>
 
-      <div className={['play-timeline gap-2 overflow-x-auto pb-1', isCoachMode ? 'hidden sm:flex' : 'flex'].join(' ')} aria-label="Play timeline">
+      <div className={['play-timeline gap-2 overflow-x-auto pb-1', isCoachMode ? 'hidden sm:flex' : 'flex'].join(' ')} aria-label="Play timeline" data-guide="play-timeline">
         {steps.map((step, index) => {
           const isActive = index === activeStepIndex
           const isComplete = index < activeStepIndex

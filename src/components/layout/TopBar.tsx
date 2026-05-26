@@ -1,4 +1,4 @@
-import { Check, Copy, FilePlus2, ImageDown, MonitorPlay, Moon, RotateCcw, Save, ScreenShareOff, Search, Settings, Share2, Sun, Trash2 } from 'lucide-react'
+import { Check, Copy, Download, FilePlus2, HelpCircle, ImageDown, LayoutTemplate, MonitorPlay, Moon, Redo2, RotateCcw, Save, ScreenShareOff, Search, Settings, Share2, Sun, Trash2, Undo2, Upload } from 'lucide-react'
 import type { Theme } from '../../hooks/useTheme'
 import type { Play } from '../../types/play'
 
@@ -12,15 +12,24 @@ type TopBarProps = {
   clearBoardLabel: string
   exportStatus?: ExportStatus
   isCoachMode: boolean
+  canRedo: boolean
+  canUndo: boolean
   onDeleteCustomPlay: () => void
   onDuplicatePlay: () => void
   onClearBoard: () => void
   onEnterCoachMode: () => void
   onExitCoachMode: () => void
   onExportPng: () => void
+  onExportJson: () => void
+  onExportPlaybook: () => void
+  onImportJson: () => void
+  onOpenHelp: () => void
+  onOpenTemplates: () => void
+  onRedo: () => void
   onResetToPlayDefaults: () => void
   onSaveAsCustomPlay: () => void
   onSaveBoard: () => void
+  onUndo: () => void
   playbookMessage?: string
   theme: Theme
   saveStatus?: BoardSaveStatus
@@ -34,15 +43,24 @@ export function TopBar({
   clearBoardLabel,
   exportStatus = 'idle',
   isCoachMode,
+  canRedo,
+  canUndo,
   onClearBoard,
   onDeleteCustomPlay,
   onDuplicatePlay,
   onEnterCoachMode,
   onExitCoachMode,
   onExportPng,
+  onExportJson,
+  onExportPlaybook,
+  onImportJson,
+  onOpenHelp,
+  onOpenTemplates,
+  onRedo,
   onResetToPlayDefaults,
   onSaveAsCustomPlay,
   onSaveBoard,
+  onUndo,
   playbookMessage,
   saveStatus = 'idle',
   theme,
@@ -68,6 +86,7 @@ export function TopBar({
       onClick: onSaveAsCustomPlay,
       disabled: false,
       className: 'text-muted hover:bg-[var(--accent-muted)]',
+      guide: 'save-as-play-button',
     },
     {
       label: 'Duplicate play',
@@ -75,6 +94,7 @@ export function TopBar({
       onClick: onDuplicatePlay,
       disabled: false,
       className: 'text-muted hover:bg-[var(--accent-muted)]',
+      guide: 'duplicate-play-button',
     },
     {
       label: canDeleteCustomPlay ? 'Delete custom play' : 'Built-in plays cannot be deleted',
@@ -82,16 +102,34 @@ export function TopBar({
       onClick: onDeleteCustomPlay,
       disabled: !canDeleteCustomPlay,
       className: 'text-[var(--defense)] hover:bg-[var(--accent-muted)]',
+      guide: 'delete-custom-play-button',
     },
   ]
 
   const boardActions = [
+    {
+      label: canUndo ? 'Undo (Ctrl+Z)' : 'Nothing to undo',
+      icon: Undo2,
+      onClick: onUndo,
+      disabled: !canUndo,
+      className: 'text-muted hover:bg-[var(--accent-muted)]',
+      guide: 'undo-button',
+    },
+    {
+      label: canRedo ? 'Redo (Ctrl+Y)' : 'Nothing to redo',
+      icon: Redo2,
+      onClick: onRedo,
+      disabled: !canRedo,
+      className: 'text-muted hover:bg-[var(--accent-muted)]',
+      guide: 'redo-button',
+    },
     {
       label: exportStatus === 'exporting' ? 'Exporting PNG' : 'Export PNG',
       icon: ImageDown,
       onClick: onExportPng,
       disabled: exportStatus === 'exporting',
       className: 'text-muted hover:bg-[var(--accent-muted)]',
+      guide: 'export-png-button',
     },
     {
       label: isCoachMode ? 'Exit Coach Mode' : 'Coach Mode',
@@ -99,13 +137,23 @@ export function TopBar({
       onClick: isCoachMode ? onExitCoachMode : onEnterCoachMode,
       disabled: false,
       className: isCoachMode ? 'accent-text hover:bg-[var(--accent-muted)]' : 'text-muted hover:bg-[var(--accent-muted)]',
+      guide: 'coach-mode-button',
     },
     {
-      label: saveStatus === 'saved' || saveStatus === 'autosaved' ? 'Board saved' : 'Save Board',
+      label: saveStatus === 'saved' || saveStatus === 'autosaved' ? 'Board saved' : 'Save Board (Ctrl+S)',
       icon: saveStatus === 'saved' ? Check : Save,
       onClick: onSaveBoard,
       disabled: false,
       className: saveStatus === 'saved' ? 'accent-text' : 'text-muted hover:bg-[var(--accent-muted)]',
+      guide: 'save-board-button',
+    },
+    {
+      label: 'Board templates',
+      icon: LayoutTemplate,
+      onClick: onOpenTemplates,
+      disabled: false,
+      className: 'text-muted hover:bg-[var(--accent-muted)]',
+      guide: 'board-templates-button',
     },
     {
       label: 'Reset to play defaults',
@@ -113,6 +161,7 @@ export function TopBar({
       onClick: onResetToPlayDefaults,
       disabled: false,
       className: 'text-muted hover:bg-[var(--accent-muted)]',
+      guide: 'reset-defaults-button',
     },
     {
       label: clearBoardLabel,
@@ -120,7 +169,15 @@ export function TopBar({
       onClick: onClearBoard,
       disabled: !canClearBoard,
       className: 'text-[var(--defense)] hover:bg-[var(--accent-muted)]',
+      guide: 'clear-board-button',
     },
+  ]
+
+  const jsonActions = [
+    { label: 'Import JSON', icon: Upload, onClick: onImportJson, guide: 'import-json-button' },
+    { label: 'Export JSON', icon: Download, onClick: onExportJson, guide: 'export-json-button' },
+    { label: 'Export Playbook', icon: Share2, onClick: onExportPlaybook, guide: 'export-playbook-button' },
+    { label: 'How to use', icon: HelpCircle, onClick: onOpenHelp, guide: 'help-button' },
   ]
 
   return (
@@ -154,7 +211,7 @@ export function TopBar({
                 {statusLabel}
               </span>
             )}
-            {!isCoachMode && playbookActions.map(({ className, disabled, icon: Icon, label, onClick }) => (
+            {!isCoachMode && playbookActions.map(({ className, disabled, guide, icon: Icon, label, onClick }) => (
               <button
                 key={label}
                 type="button"
@@ -166,12 +223,27 @@ export function TopBar({
                 ].join(' ')}
                 aria-label={label}
                 title={label}
+                data-guide={guide}
               >
                 <Icon size={21} aria-hidden="true" />
               </button>
             ))}
             {!isCoachMode && <div className="tactical-border h-8 w-px border-l" />}
-            {boardActions.map(({ className, disabled, icon: Icon, label, onClick }) => (
+            {!isCoachMode && jsonActions.map(({ guide, icon: Icon, label, onClick }) => (
+              <button
+                key={label}
+                type="button"
+                onClick={onClick}
+                className="text-muted flex h-10 w-10 items-center justify-center rounded-md transition hover:bg-[var(--accent-muted)]"
+                aria-label={label}
+                title={label}
+                data-guide={guide}
+              >
+                <Icon size={21} aria-hidden="true" />
+              </button>
+            ))}
+            {!isCoachMode && <div className="tactical-border h-8 w-px border-l" />}
+            {boardActions.map(({ className, disabled, guide, icon: Icon, label, onClick }) => (
               <button
                 key={label}
                 type="button"
@@ -183,6 +255,7 @@ export function TopBar({
                 ].join(' ')}
                 aria-label={label}
                 title={label}
+                data-guide={guide}
               >
                 <Icon size={21} aria-hidden="true" />
               </button>
@@ -211,15 +284,29 @@ export function TopBar({
           className="panel-floating flex h-10 w-10 items-center justify-center rounded-md border text-[var(--text-muted)] transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-40 lg:hidden"
           aria-label={exportStatus === 'exporting' ? 'Exporting PNG' : 'Export PNG'}
           title={exportStatus === 'exporting' ? 'Exporting PNG' : 'Export PNG'}
+          data-guide="export-png-button"
         >
           <ImageDown size={19} aria-hidden="true" />
         </button>
+        {!isCoachMode && (
+        <button
+          type="button"
+          onClick={onOpenHelp}
+          className="panel-floating flex h-10 w-10 items-center justify-center rounded-md border text-[var(--text-muted)] transition hover:bg-[var(--accent-muted)] lg:hidden"
+          aria-label="How to use"
+          title="How to use"
+          data-guide="help-button"
+        >
+          <HelpCircle size={19} aria-hidden="true" />
+        </button>
+        )}
         <button
           type="button"
           onClick={isCoachMode ? onExitCoachMode : onEnterCoachMode}
           className="panel-floating flex h-10 w-10 items-center justify-center rounded-md border text-[var(--accent)] transition hover:bg-[var(--accent-muted)] lg:hidden"
           aria-label={isCoachMode ? 'Exit Coach Mode' : 'Coach Mode'}
           title={isCoachMode ? 'Exit Coach Mode' : 'Coach Mode'}
+          data-guide="coach-mode-button"
         >
           {isCoachMode ? <ScreenShareOff size={19} aria-hidden="true" /> : <MonitorPlay size={19} aria-hidden="true" />}
         </button>
@@ -230,6 +317,7 @@ export function TopBar({
           className="panel-floating flex h-10 w-10 items-center justify-center rounded-md border text-[var(--accent)] transition hover:bg-[var(--accent-muted)] lg:hidden"
           aria-label="Save as custom play"
           title="Save as custom play"
+          data-guide="save-as-play-button"
         >
           <FilePlus2 size={19} aria-hidden="true" />
         </button>

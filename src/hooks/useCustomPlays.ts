@@ -26,6 +26,24 @@ export function useCustomPlays() {
     [customPlays, persistCustomPlays],
   )
 
+  const addCustomPlays = useCallback(
+    (plays: Play[]) => {
+      const nextPlays = [...customPlays]
+      plays.forEach((play) => {
+        const customPlay = { ...play, source: 'custom' as const, isCustom: true }
+        const existingIndex = nextPlays.findIndex((item) => item.id === customPlay.id)
+        if (existingIndex >= 0) {
+          nextPlays[existingIndex] = customPlay
+        } else {
+          nextPlays.push(customPlay)
+        }
+      })
+      persistCustomPlays(nextPlays)
+      return plays
+    },
+    [customPlays, persistCustomPlays],
+  )
+
   const updateCustomPlay = useCallback(
     (play: Play) => {
       const updatedPlay = {
@@ -34,7 +52,10 @@ export function useCustomPlays() {
         isCustom: true,
         updatedAt: new Date().toISOString(),
       }
-      persistCustomPlays(customPlays.map((item) => (item.id === updatedPlay.id ? updatedPlay : item)))
+      const exists = customPlays.some((item) => item.id === updatedPlay.id)
+      persistCustomPlays(exists
+        ? customPlays.map((item) => (item.id === updatedPlay.id ? updatedPlay : item))
+        : [...customPlays, updatedPlay])
       return updatedPlay
     },
     [customPlays, persistCustomPlays],
@@ -47,6 +68,7 @@ export function useCustomPlays() {
 
   return {
     addCustomPlay,
+    addCustomPlays,
     customPlayIds,
     customPlays,
     deleteCustomPlay,

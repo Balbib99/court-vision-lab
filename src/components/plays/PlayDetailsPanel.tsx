@@ -15,8 +15,10 @@ type PlayDetailsPanelProps = {
   ballCarrierId?: string
   canEditTimeline?: boolean
   onAssignBall: () => void
+  onAddCoachingPoint?: () => void
   onAddStep?: () => void
   onClearStepAnnotations?: () => void
+  onDeleteCoachingPoint?: (index: number) => void
   onDeleteStep?: () => void
   onEditStepDescription?: () => void
   onRenameStep?: () => void
@@ -38,8 +40,10 @@ export function PlayDetailsPanel({
   ballCarrierId,
   canEditTimeline = false,
   onAssignBall,
+  onAddCoachingPoint,
   onAddStep,
   onClearStepAnnotations,
+  onDeleteCoachingPoint,
   onDeleteStep,
   onEditStepDescription,
   onRenameStep,
@@ -88,6 +92,41 @@ export function PlayDetailsPanel({
       <div className="play-objective tactical-border mt-5 border-t pt-5">
         <h3 className="text-soft font-mono text-[11px] uppercase tracking-[0.16em]">Objective</h3>
         <p className="text-muted mt-2 text-sm leading-6">{play.objective}</p>
+      </div>
+
+      <div className="strategy-notes tactical-border mt-5 border-t pt-5">
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-soft font-mono text-[11px] uppercase tracking-[0.16em]">Coaching Points</h3>
+          {canEditTimeline && (
+            <button
+              type="button"
+              onClick={onAddCoachingPoint}
+              className="accent-text rounded-sm px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] transition hover:bg-[var(--accent-muted)]"
+              aria-label="Add coaching point"
+              title="Add coaching point"
+            >
+              Add
+            </button>
+          )}
+        </div>
+        <div className="mt-3 grid gap-2">
+          {(play.coachingPoints?.length ? play.coachingPoints : ['Keep spacing balanced before the action starts.', 'Read the help defender before committing to the pass.']).map((note, index) => (
+            <div key={`${note}-${index}`} className="panel flex items-start justify-between gap-3 rounded-md border p-2 text-xs text-[var(--text-muted)]">
+              <span>{note}</span>
+              {canEditTimeline && play.coachingPoints?.length ? (
+                <button
+                  type="button"
+                  onClick={() => onDeleteCoachingPoint?.(index)}
+                  className="text-[var(--defense)] transition hover:opacity-80"
+                  aria-label={`Delete coaching point ${index + 1}`}
+                  title="Delete coaching point"
+                >
+                  ×
+                </button>
+              ) : null}
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="current-read tactical-border mt-5 border-t pt-5">
@@ -146,6 +185,7 @@ export function PlayDetailsPanel({
               className="panel rounded-md border px-3 py-2 text-xs font-bold text-[var(--text-main)] transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-40"
               aria-label={item.title}
               title={item.title}
+              data-guide={item.label === '+ Step' ? 'add-step-button' : item.label === 'Update' ? 'update-step-button' : undefined}
             >
               {item.label}
             </button>
@@ -167,6 +207,7 @@ export function PlayDetailsPanel({
             className="panel col-span-2 rounded-md border px-3 py-2 text-xs font-bold text-[var(--text-muted)] transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Clear annotations for current step"
             title={(activeStep?.annotations ?? []).length === 0 ? 'No annotations on this step' : 'Clear annotations for current step'}
+            data-guide="clear-annotations-button"
           >
             Clear Annotations
           </button>

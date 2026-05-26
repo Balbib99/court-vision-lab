@@ -309,6 +309,11 @@ export const normalizeCustomPlay = (value: unknown): Play | undefined => {
     updatedAt: typeof rawPlay.updatedAt === 'string' ? rawPlay.updatedAt : undefined,
     basePlayId: typeof rawPlay.basePlayId === 'string' ? rawPlay.basePlayId : undefined,
     userDescription: typeof rawPlay.userDescription === 'string' ? rawPlay.userDescription : undefined,
+    version: typeof rawPlay.version === 'number' ? rawPlay.version : 1,
+    coachingPoints: Array.isArray(rawPlay.coachingPoints) ? rawPlay.coachingPoints.filter((item): item is string => typeof item === 'string') : undefined,
+    strengths: Array.isArray(rawPlay.strengths) ? rawPlay.strengths.filter((item): item is string => typeof item === 'string') : undefined,
+    weaknesses: Array.isArray(rawPlay.weaknesses) ? rawPlay.weaknesses.filter((item): item is string => typeof item === 'string') : undefined,
+    counters: Array.isArray(rawPlay.counters) ? rawPlay.counters.filter((item): item is string => typeof item === 'string') : undefined,
   })
 }
 

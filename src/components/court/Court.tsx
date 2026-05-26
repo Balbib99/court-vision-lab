@@ -140,6 +140,7 @@ export function Court({
         onPointerUp={stopDragging}
         onPointerCancel={stopDragging}
         onPointerLeave={stopDragging}
+        data-guide="court-board"
       >
         <CourtGrid />
         <div className="absolute inset-0 border border-[color:var(--border-strong)]" />

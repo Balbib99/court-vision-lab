@@ -45,7 +45,7 @@ const normalizePlayer = (value: unknown): Player | undefined => {
     return undefined
   }
 
-  const { hasBall, id, label, position, role, team } = value
+  const { hasBall, id, label, name, number, position, role, rosterPlayerId, stats, tags, team } = value
   if (
     typeof id !== 'string' ||
     typeof label !== 'string' ||
@@ -59,8 +59,13 @@ const normalizePlayer = (value: unknown): Player | undefined => {
   return {
     id,
     label,
+    name: typeof name === 'string' ? name : undefined,
+    number: typeof number === 'number' ? number : undefined,
     position: clampPosition(position),
     role: typeof role === 'string' ? role : undefined,
+    rosterPlayerId: typeof rosterPlayerId === 'string' ? rosterPlayerId : undefined,
+    tags: Array.isArray(tags) ? tags.filter((tag): tag is string => typeof tag === 'string') : undefined,
+    stats: isObject(stats) ? Object.fromEntries(Object.entries(stats).filter(([, stat]) => typeof stat === 'number')) : undefined,
     team,
     hasBall: typeof hasBall === 'boolean' ? hasBall : undefined,
   }

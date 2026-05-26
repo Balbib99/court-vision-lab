@@ -90,6 +90,7 @@ export function RightToolbar({
           ].join(' ')}
           aria-label={isEditMode ? 'Switch to play mode' : 'Switch to edit mode'}
           title={isEditMode ? 'Play Mode' : 'Edit Mode'}
+          data-guide="edit-mode-toggle"
         >
           {isEditMode ? <CirclePlay size={21} aria-hidden="true" /> : <Pencil size={21} aria-hidden="true" />}
         </button>
@@ -115,6 +116,7 @@ export function RightToolbar({
               ].join(' ')}
               aria-label={title}
               title={title}
+              data-guide={`${tool}-tool`}
             >
               <Icon size={21} aria-hidden="true" />
             </button>
@@ -133,6 +135,7 @@ export function RightToolbar({
           ].join(' ')}
           aria-label={deleteLabel}
           title={deleteLabel}
+          data-guide="delete-player-button"
         >
           <Trash2 size={21} aria-hidden="true" />
         </button>
@@ -148,6 +151,7 @@ export function RightToolbar({
             className={[toolbarButtonClass, 'panel border-2 font-mono text-xs font-black text-[var(--text-main)]'].join(' ')}
             aria-label={tool.label}
             title={tool.label}
+            data-guide={tool.text === '+O' ? 'add-offense-button' : 'add-defense-button'}
           >
             {tool.text}
           </button>
@@ -168,6 +172,7 @@ export function RightToolbar({
           ].join(' ')}
           aria-label={assignBallLabel}
           title={assignBallLabel}
+          data-guide="assign-ball-button"
         >
           <span aria-hidden="true">+{String.fromCodePoint(0x1f3c0)}</span>
         </button>

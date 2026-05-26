@@ -9,9 +9,13 @@ export type Player = {
   id: string
   label: string
   name?: string
+  number?: number
   team: Team
   position: Position
   role?: string
+  rosterPlayerId?: string
+  tags?: string[]
+  stats?: Partial<Record<'shooting' | 'threePoint' | 'passing' | 'rebounding' | 'defense' | 'speed' | 'finishing' | 'rating', number>>
   hasBall?: boolean
 }
 
@@ -71,4 +75,9 @@ export type Play = {
   isCustom?: boolean
   basePlayId?: string
   userDescription?: string
+  version?: number
+  coachingPoints?: string[]
+  strengths?: string[]
+  weaknesses?: string[]
+  counters?: string[]
 }

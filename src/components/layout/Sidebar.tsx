@@ -46,6 +46,7 @@ export function Sidebar({ activeSection, onSelectSection }: SidebarProps) {
               title={label}
               aria-label={label}
               aria-current={isActive ? 'page' : undefined}
+              data-guide={`${id}-nav`}
             >
               <Icon size={22} aria-hidden="true" />
               <span className="sidebar-label w-full truncate text-center leading-tight">{label}</span>

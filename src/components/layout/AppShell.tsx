@@ -18,6 +18,8 @@ type AppShellProps = {
   canClearBoard: boolean
   canDeleteCustomPlay: boolean
   canEditTimeline: boolean
+  canRedo: boolean
+  canUndo: boolean
   canUseDrawingTools: boolean
   clearBoardLabel: string
   children: ReactNode
@@ -33,11 +35,18 @@ type AppShellProps = {
   onEnterCoachMode: () => void
   onExitCoachMode: () => void
   onExportPng: () => void
+  onExportJson: () => void
+  onExportPlaybook: () => void
+  onImportJson: () => void
+  onOpenHelp: () => void
+  onOpenTemplates: () => void
+  onRedo: () => void
   onSelectSection: (section: AppSection) => void
   onRemoveSelectedPlayer: () => void
   onResetToPlayDefaults: () => void
   onSaveAsCustomPlay: () => void
   onSaveBoard: () => void
+  onUndo: () => void
   onSelectTool: (tool: DrawingTool) => void
   onToggleTheme: () => void
   onToggleEditMode: () => void
@@ -66,6 +75,8 @@ export function AppShell({
   canClearBoard,
   canDeleteCustomPlay,
   canEditTimeline,
+  canRedo,
+  canUndo,
   canUseDrawingTools,
   clearBoardLabel,
   children,
@@ -81,11 +92,18 @@ export function AppShell({
   onEnterCoachMode,
   onExitCoachMode,
   onExportPng,
+  onExportJson,
+  onExportPlaybook,
+  onImportJson,
+  onOpenHelp,
+  onOpenTemplates,
+  onRedo,
   onSelectSection,
   onRemoveSelectedPlayer,
   onResetToPlayDefaults,
   onSaveAsCustomPlay,
   onSaveBoard,
+  onUndo,
   onSelectTool,
   onNextStep,
   onPlayFullSequence,
@@ -109,6 +127,8 @@ export function AppShell({
         activePlay={activePlay}
         canClearBoard={canClearBoard}
         canDeleteCustomPlay={canDeleteCustomPlay}
+        canRedo={canRedo}
+        canUndo={canUndo}
         clearBoardLabel={clearBoardLabel}
         exportStatus={exportStatus}
         isCoachMode={isCoachMode}
@@ -118,9 +138,16 @@ export function AppShell({
         onEnterCoachMode={onEnterCoachMode}
         onExitCoachMode={onExitCoachMode}
         onExportPng={onExportPng}
+        onExportJson={onExportJson}
+        onExportPlaybook={onExportPlaybook}
+        onImportJson={onImportJson}
+        onOpenHelp={onOpenHelp}
+        onOpenTemplates={onOpenTemplates}
+        onRedo={onRedo}
         onResetToPlayDefaults={onResetToPlayDefaults}
         onSaveAsCustomPlay={onSaveAsCustomPlay}
         onSaveBoard={onSaveBoard}
+        onUndo={onUndo}
         playbookMessage={playbookMessage}
         saveStatus={saveStatus}
         theme={theme}
@@ -143,6 +170,7 @@ export function AppShell({
                 aria-current={isActive ? 'page' : undefined}
                 aria-label={section}
                 title={section}
+                data-guide={`${section}-nav`}
               >
                 {section}
               </button>
