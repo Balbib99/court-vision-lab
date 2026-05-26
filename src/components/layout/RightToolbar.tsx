@@ -46,7 +46,7 @@ export function RightToolbar({
       : 'Select a player first'
   const deleteDisabled = !isEditMode || !selectedPlayer
   const toolbarButtonClass =
-    'toolbar-button flex h-12 w-12 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-40'
+    'toolbar-button flex h-10 w-10 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-40'
 
   const drawingTools: Array<{ label: string; tool: Exclude<DrawingTool, 'select'>; icon: typeof MousePointer2 }> = [
     { label: 'Draw movement arrow', tool: 'movement', icon: ArrowUpRight },
@@ -92,7 +92,7 @@ export function RightToolbar({
           title={isEditMode ? 'Play Mode' : 'Edit Mode'}
           data-guide="edit-mode-toggle"
         >
-          {isEditMode ? <CirclePlay size={21} aria-hidden="true" /> : <Pencil size={21} aria-hidden="true" />}
+          {isEditMode ? <CirclePlay size={19} aria-hidden="true" /> : <Pencil size={19} aria-hidden="true" />}
         </button>
 
         {drawingTools.map(({ icon: Icon, label, tool }) => {
@@ -118,7 +118,7 @@ export function RightToolbar({
               title={title}
               data-guide={`${tool}-tool`}
             >
-              <Icon size={21} aria-hidden="true" />
+              <Icon size={19} aria-hidden="true" />
             </button>
           )
         })}
@@ -137,7 +137,7 @@ export function RightToolbar({
           title={deleteLabel}
           data-guide="delete-player-button"
         >
-          <Trash2 size={21} aria-hidden="true" />
+          <Trash2 size={19} aria-hidden="true" />
         </button>
 
         <div className="tactical-border my-1 h-px w-8 self-center border-t" />

@@ -40,8 +40,8 @@ export function BottomControls({
 
   return (
     <div className={[
-      'bottom-controls panel-floating z-30 mx-auto flex w-full flex-col rounded-2xl border px-4 py-3 sm:rounded-3xl sm:px-5',
-      isCoachMode ? 'max-w-2xl gap-2' : 'max-w-4xl gap-3',
+      'bottom-controls panel-floating z-30 mx-auto flex w-full flex-col rounded-2xl border px-3 py-2.5 sm:rounded-3xl sm:px-4',
+      isCoachMode ? 'max-w-2xl gap-2' : 'max-w-3xl gap-2.5',
     ].join(' ')} data-guide="bottom-controls">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="bottom-controls-primary flex items-center gap-2.5">
@@ -49,18 +49,18 @@ export function BottomControls({
             type="button"
             onClick={onPlayFullSequence}
             disabled={isEditMode}
-            className="control-button accent-bg flex h-11 w-11 items-center justify-center rounded-full transition hover:brightness-110"
+            className="control-button accent-bg flex h-10 w-10 items-center justify-center rounded-full transition hover:brightness-110"
             aria-label={isEditMode ? 'Playback disabled in edit mode' : isPlaying ? 'Pause full sequence' : 'Play full sequence'}
             title={isEditMode ? 'Playback disabled in edit mode' : isPlaying ? 'Pause sequence' : 'Play full sequence'}
             data-guide="play-sequence-button"
           >
-            {isPlaying ? <Pause size={20} aria-hidden="true" /> : <Play size={20} aria-hidden="true" />}
+            {isPlaying ? <Pause size={18} aria-hidden="true" /> : <Play size={18} aria-hidden="true" />}
           </button>
           <button
             type="button"
             onClick={onPreviousStep}
             disabled={timelineDisabled || isFirstStep}
-            className="control-button text-muted tactical-border flex h-10 w-10 items-center justify-center rounded-full border transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-35"
+            className="control-button text-muted tactical-border flex h-9 w-9 items-center justify-center rounded-full border transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-35"
             aria-label="Previous step"
             title="Previous step"
           >
@@ -70,7 +70,7 @@ export function BottomControls({
             type="button"
             onClick={onNextStep}
             disabled={timelineDisabled || isLastStep}
-            className="control-button text-muted tactical-border flex h-10 w-10 items-center justify-center rounded-full border transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-35"
+            className="control-button text-muted tactical-border flex h-9 w-9 items-center justify-center rounded-full border transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-35"
             aria-label="Next step"
             title="Next step"
           >
@@ -79,7 +79,7 @@ export function BottomControls({
           <button
             type="button"
             onClick={onReset}
-            className="control-button text-muted tactical-border flex h-10 w-10 items-center justify-center rounded-full border transition hover:bg-[var(--accent-muted)]"
+            className="control-button text-muted tactical-border flex h-9 w-9 items-center justify-center rounded-full border transition hover:bg-[var(--accent-muted)]"
             aria-label={isEditMode ? 'Reset positions' : 'Reset play'}
             title={isEditMode ? 'Reset positions' : 'Reset play'}
           >
@@ -114,7 +114,7 @@ export function BottomControls({
               onClick={() => onStepSelect(index)}
               disabled={timelineDisabled}
               className={[
-                'timeline-step min-w-[126px] flex-1 rounded-md border px-3 py-2 text-left transition disabled:cursor-not-allowed disabled:opacity-50',
+                'timeline-step min-w-[108px] flex-1 rounded-md border px-2.5 py-1.5 text-left transition disabled:cursor-not-allowed disabled:opacity-50',
                 isActive
                   ? 'accent-badge'
                   : isComplete

@@ -124,15 +124,15 @@ export function Court({
 
   return (
     <section className={[
-      'court-stage relative flex w-full items-center justify-center overflow-hidden bg-transparent p-3 sm:p-4 md:p-8',
-      isCoachMode ? 'min-h-[calc(100dvh-180px)] md:min-h-[calc(100dvh-170px)]' : 'min-h-[420px] md:min-h-[min(64vh,760px)]',
+      'court-stage relative flex w-full items-center justify-center overflow-hidden bg-transparent p-3 sm:p-4 md:p-5',
+      isCoachMode ? 'min-h-[calc(100dvh-170px)] md:min-h-[calc(100dvh-150px)]' : 'min-h-[360px] md:min-h-[min(58vh,660px)]',
     ].join(' ')}>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--accent-muted),transparent_42%)]" />
       <div
         ref={boardRef}
         className={[
           'court-board court-surface relative aspect-[16/9] w-full overflow-hidden rounded-md border-4',
-          isCoachMode || isTacticalPanelCollapsed ? 'max-w-[1600px]' : 'max-w-[1160px]',
+          isCoachMode ? 'max-w-[1400px]' : isTacticalPanelCollapsed ? 'max-w-[1360px]' : 'max-w-[1040px]',
           isEditMode ? 'touch-none' : '',
         ].join(' ')}
         onPointerDown={handleBoardPointerDown}

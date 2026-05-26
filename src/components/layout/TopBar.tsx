@@ -181,9 +181,9 @@ export function TopBar({
   ]
 
   return (
-    <header className={['topbar panel-glass sticky top-0 z-50 flex items-center justify-between border-b px-4 md:px-8', isCoachMode ? 'h-16' : 'h-20'].join(' ')}>
-      <div className="flex min-w-0 items-center gap-3 sm:gap-5">
-        <h1 className="topbar-brand accent-text shrink-0 font-display text-xl tracking-[0.08em] sm:text-2xl md:text-3xl">
+    <header className={['topbar panel-glass sticky top-0 z-50 flex items-center justify-between border-b px-4 md:px-6', isCoachMode ? 'h-14' : 'h-16'].join(' ')}>
+      <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+        <h1 className="topbar-brand accent-text shrink-0 font-display text-lg tracking-[0.08em] sm:text-xl md:text-2xl">
           COURT VISION<span className="hidden sm:inline"> LAB</span>
         </h1>
         <div className="topbar-divider tactical-border hidden h-8 w-px border-l sm:block" />
@@ -196,8 +196,8 @@ export function TopBar({
       <div className="flex items-center gap-2 lg:gap-4">
         <div className={['topbar-actions hidden items-center gap-4 lg:flex', isCoachMode ? 'lg:gap-2' : ''].join(' ')}>
           {!isCoachMode && (
-          <label className="panel flex h-12 w-80 items-center gap-3 rounded-md border px-4 text-[var(--text-muted)]">
-            <Search size={19} aria-hidden="true" />
+          <label className="panel flex h-10 w-64 items-center gap-3 rounded-md border px-3 text-[var(--text-muted)]">
+            <Search size={17} aria-hidden="true" />
             <input
               className="text-main w-full border-0 bg-transparent p-0 font-mono text-sm outline-none placeholder:text-[var(--text-soft)]"
               placeholder="Search plays..."
@@ -218,14 +218,14 @@ export function TopBar({
                 onClick={onClick}
                 disabled={disabled}
                 className={[
-                  'flex h-10 w-10 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-40',
+                  'flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-40',
                   className,
                 ].join(' ')}
                 aria-label={label}
                 title={label}
                 data-guide={guide}
               >
-                <Icon size={21} aria-hidden="true" />
+                <Icon size={19} aria-hidden="true" />
               </button>
             ))}
             {!isCoachMode && <div className="tactical-border h-8 w-px border-l" />}
@@ -234,12 +234,12 @@ export function TopBar({
                 key={label}
                 type="button"
                 onClick={onClick}
-                className="text-muted flex h-10 w-10 items-center justify-center rounded-md transition hover:bg-[var(--accent-muted)]"
+                className="text-muted flex h-9 w-9 items-center justify-center rounded-md transition hover:bg-[var(--accent-muted)]"
                 aria-label={label}
                 title={label}
                 data-guide={guide}
               >
-                <Icon size={21} aria-hidden="true" />
+                <Icon size={19} aria-hidden="true" />
               </button>
             ))}
             {!isCoachMode && <div className="tactical-border h-8 w-px border-l" />}
@@ -250,14 +250,14 @@ export function TopBar({
                 onClick={onClick}
                 disabled={disabled}
                 className={[
-                  'flex h-10 w-10 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-40',
+                  'flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-40',
                   className,
                 ].join(' ')}
                 aria-label={label}
                 title={label}
                 data-guide={guide}
               >
-                <Icon size={21} aria-hidden="true" />
+                <Icon size={19} aria-hidden="true" />
               </button>
             ))}
             {!isCoachMode && [
@@ -268,11 +268,11 @@ export function TopBar({
                 key={label}
                 type="button"
                 disabled
-                className="text-muted flex h-10 w-10 items-center justify-center rounded-md opacity-70"
+                className="text-muted flex h-9 w-9 items-center justify-center rounded-md opacity-70"
                 aria-label={label}
                 title={label}
               >
-                <Icon size={21} aria-hidden="true" />
+                <Icon size={19} aria-hidden="true" />
               </button>
             ))}
           </div>

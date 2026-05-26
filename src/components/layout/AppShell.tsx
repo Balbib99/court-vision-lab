@@ -178,11 +178,11 @@ export function AppShell({
           })}
         </nav>
       )}
-      <div className={['app-body flex', isCoachMode ? 'min-h-[calc(100dvh-64px)]' : 'min-h-[calc(100dvh-80px)]'].join(' ')}>
+      <div className={['app-body flex', isCoachMode ? 'min-h-[calc(100dvh-56px)]' : 'min-h-[calc(100dvh-64px)]'].join(' ')}>
         {!isCoachMode && <Sidebar activeSection={activeSection} onSelectSection={onSelectSection} />}
         <main className="app-main relative flex min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto xl:overflow-hidden">
-          <div className={['app-content relative min-h-0 flex-1', isCoachMode ? 'pb-24 xl:pb-0' : 'pb-32 xl:pb-0'].join(' ')}>{children}</div>
-          {(activeSection === 'board' || isCoachMode) && <div className={['bottom-controls-wrap pointer-events-none fixed inset-x-4 bottom-4 z-40 xl:absolute xl:bottom-5', isCoachMode ? 'md:left-8 md:right-8' : 'md:left-32 md:right-8'].join(' ')}>
+          <div className={['app-content relative min-h-0 flex-1', isCoachMode ? 'pb-20 xl:pb-0' : 'pb-28 xl:pb-0'].join(' ')}>{children}</div>
+          {(activeSection === 'board' || isCoachMode) && <div className={['bottom-controls-wrap pointer-events-none fixed inset-x-4 bottom-4 z-40 xl:absolute xl:bottom-4', isCoachMode ? 'md:left-8 md:right-8' : 'md:left-32 md:right-8'].join(' ')}>
             <div className="pointer-events-auto">
               <BottomControls
                 activeStep={activeStep}
