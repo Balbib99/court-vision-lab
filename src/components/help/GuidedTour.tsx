@@ -107,7 +107,7 @@ export function GuidedTour({ currentStepIndex, guide, onBack, onClose, onNext, o
       )}
       {spotlightRect && (
         <div
-          className="tour-highlight pointer-events-none fixed rounded-xl border-2 border-[var(--accent)]"
+          className="tour-highlight pointer-events-none fixed rounded-xl border-2 border-[var(--highlight)]"
           style={{
             height: spotlightRect.height,
             left: spotlightRect.left,
@@ -117,7 +117,7 @@ export function GuidedTour({ currentStepIndex, guide, onBack, onClose, onNext, o
         />
       )}
       <section
-        className="panel-floating pointer-events-auto fixed w-[min(380px,calc(100vw-32px))] rounded-2xl border p-4"
+        className="chrome-surface pointer-events-auto fixed w-[min(380px,calc(100vw-32px))] rounded-2xl border p-4"
         style={{
           left: cardPosition.left,
           top: cardPosition.top,
@@ -126,15 +126,15 @@ export function GuidedTour({ currentStepIndex, guide, onBack, onClose, onNext, o
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="accent-text font-mono text-[10px] font-bold uppercase tracking-[0.14em]">
-              Step {currentStepIndex + 1} / {guide.steps.length}
+            <p className="text-soft text-[11px] font-semibold">
+              Step {currentStepIndex + 1} of {guide.steps.length}
             </p>
             <h3 className="text-main mt-1 text-lg font-black">{step.title}</h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-muted rounded-md px-2 py-1 text-sm transition hover:bg-[var(--accent-muted)]"
+            className="chrome-btn rounded-md px-2 py-1 text-sm transition"
             aria-label="Exit guide"
             title="Exit guide"
           >
@@ -143,7 +143,7 @@ export function GuidedTour({ currentStepIndex, guide, onBack, onClose, onNext, o
         </div>
         <p className="text-muted mt-3 text-sm leading-6">{step.description}</p>
         {step.actionHint && (
-          <p className="accent-text mt-3 font-mono text-[10px] font-bold uppercase tracking-[0.12em]">{step.actionHint}</p>
+          <p className="mt-3 text-[11px] font-semibold" style={{ color: 'var(--highlight-text)', background: 'var(--highlight)', display: 'inline-block', padding: '2px 8px', borderRadius: '4px' }}>{step.actionHint}</p>
         )}
         {!rect && step.target && (
           <p className="text-soft mt-3 text-xs">This target is not visible right now, so the guide is showing this step without a highlight.</p>
@@ -153,7 +153,7 @@ export function GuidedTour({ currentStepIndex, guide, onBack, onClose, onNext, o
             type="button"
             onClick={onBack}
             disabled={currentStepIndex === 0}
-            className="panel rounded-md border px-3 py-2 text-xs font-bold text-[var(--text-muted)] transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-40"
+            className="chrome-surface chrome-btn rounded-md border px-3 py-2 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Previous guide step"
             title="Previous guide step"
           >
@@ -162,7 +162,7 @@ export function GuidedTour({ currentStepIndex, guide, onBack, onClose, onNext, o
           <button
             type="button"
             onClick={isLastStep ? onClose : onNext}
-            className="accent-badge rounded-md px-3 py-2 text-xs font-bold"
+            className="chrome-btn-primary rounded-md px-3 py-2 text-xs font-bold"
             aria-label={isLastStep ? 'Finish guide' : 'Next guide step'}
             title={isLastStep ? 'Finish guide' : 'Next guide step'}
           >

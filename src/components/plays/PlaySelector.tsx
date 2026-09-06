@@ -13,14 +13,14 @@ export function PlaySelector({ plays, selectedPlayId, onSelect }: PlaySelectorPr
 
   return (
     <label className="block">
-      <span className="text-soft mb-2 block font-mono text-[11px] font-semibold uppercase tracking-[0.16em]">
+      <span className="text-soft mb-2 block text-[11px] font-semibold">
         Playbook
       </span>
       <span className="relative block">
         <select
           value={selectedPlayId}
           onChange={(event) => onSelect(event.target.value)}
-          className="panel h-11 w-full appearance-none rounded-md border px-3 pr-10 text-sm font-bold text-[var(--text-main)] outline-none transition focus:border-[var(--accent)]"
+          className="chrome-surface h-11 w-full appearance-none rounded-md border px-3 pr-10 text-sm font-bold text-[var(--text-main)] outline-none transition focus:border-[var(--text-main)]"
         >
           <optgroup label="Built-in Plays">
             {builtInPlays.map((play) => (

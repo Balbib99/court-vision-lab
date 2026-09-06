@@ -85,7 +85,7 @@ export function TopBar({
       icon: FilePlus2,
       onClick: onSaveAsCustomPlay,
       disabled: false,
-      className: 'text-muted hover:bg-[var(--accent-muted)]',
+      className: 'chrome-btn',
       guide: 'save-as-play-button',
     },
     {
@@ -93,7 +93,7 @@ export function TopBar({
       icon: Copy,
       onClick: onDuplicatePlay,
       disabled: false,
-      className: 'text-muted hover:bg-[var(--accent-muted)]',
+      className: 'chrome-btn',
       guide: 'duplicate-play-button',
     },
     {
@@ -101,7 +101,7 @@ export function TopBar({
       icon: Trash2,
       onClick: onDeleteCustomPlay,
       disabled: !canDeleteCustomPlay,
-      className: 'text-[var(--defense)] hover:bg-[var(--accent-muted)]',
+      className: 'chrome-btn text-[var(--defense)]',
       guide: 'delete-custom-play-button',
     },
   ]
@@ -112,7 +112,7 @@ export function TopBar({
       icon: Undo2,
       onClick: onUndo,
       disabled: !canUndo,
-      className: 'text-muted hover:bg-[var(--accent-muted)]',
+      className: 'chrome-btn',
       guide: 'undo-button',
     },
     {
@@ -120,7 +120,7 @@ export function TopBar({
       icon: Redo2,
       onClick: onRedo,
       disabled: !canRedo,
-      className: 'text-muted hover:bg-[var(--accent-muted)]',
+      className: 'chrome-btn',
       guide: 'redo-button',
     },
     {
@@ -128,7 +128,7 @@ export function TopBar({
       icon: ImageDown,
       onClick: onExportPng,
       disabled: exportStatus === 'exporting',
-      className: 'text-muted hover:bg-[var(--accent-muted)]',
+      className: 'chrome-btn',
       guide: 'export-png-button',
     },
     {
@@ -136,7 +136,7 @@ export function TopBar({
       icon: isCoachMode ? ScreenShareOff : MonitorPlay,
       onClick: isCoachMode ? onExitCoachMode : onEnterCoachMode,
       disabled: false,
-      className: isCoachMode ? 'accent-text hover:bg-[var(--accent-muted)]' : 'text-muted hover:bg-[var(--accent-muted)]',
+      className: isCoachMode ? 'chrome-btn-active' : 'chrome-btn',
       guide: 'coach-mode-button',
     },
     {
@@ -144,7 +144,7 @@ export function TopBar({
       icon: saveStatus === 'saved' ? Check : Save,
       onClick: onSaveBoard,
       disabled: false,
-      className: saveStatus === 'saved' ? 'accent-text' : 'text-muted hover:bg-[var(--accent-muted)]',
+      className: saveStatus === 'saved' ? 'chrome-btn text-[var(--ball)]' : 'chrome-btn',
       guide: 'save-board-button',
     },
     {
@@ -152,7 +152,7 @@ export function TopBar({
       icon: LayoutTemplate,
       onClick: onOpenTemplates,
       disabled: false,
-      className: 'text-muted hover:bg-[var(--accent-muted)]',
+      className: 'chrome-btn',
       guide: 'board-templates-button',
     },
     {
@@ -160,7 +160,7 @@ export function TopBar({
       icon: RotateCcw,
       onClick: onResetToPlayDefaults,
       disabled: false,
-      className: 'text-muted hover:bg-[var(--accent-muted)]',
+      className: 'chrome-btn',
       guide: 'reset-defaults-button',
     },
     {
@@ -168,7 +168,7 @@ export function TopBar({
       icon: Trash2,
       onClick: onClearBoard,
       disabled: !canClearBoard,
-      className: 'text-[var(--defense)] hover:bg-[var(--accent-muted)]',
+      className: 'chrome-btn text-[var(--defense)]',
       guide: 'clear-board-button',
     },
   ]
@@ -181,14 +181,30 @@ export function TopBar({
   ]
 
   return (
-    <header className={['topbar panel-glass sticky top-0 z-50 flex items-center justify-between border-b px-4 md:px-6', isCoachMode ? 'h-14' : 'h-16'].join(' ')}>
+    <header className={['topbar chrome-surface sticky top-0 z-50 flex items-center justify-between border-b px-4 md:px-6', isCoachMode ? 'h-14' : 'h-16'].join(' ')}>
       <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-        <h1 className="topbar-brand accent-text shrink-0 font-display text-lg tracking-[0.08em] sm:text-xl md:text-2xl">
-          COURT VISION<span className="hidden sm:inline"> LAB</span>
-        </h1>
-        <div className="topbar-divider tactical-border hidden h-8 w-px border-l sm:block" />
+        <div className="topbar-brand shrink-0">
+          <h1 className="font-display text-lg leading-none text-[var(--text-main)] sm:text-xl md:text-2xl">
+            Court Vision<span className="hidden sm:inline"> Lab</span>
+          </h1>
+          <svg
+            className="mt-0.5 h-1.5 w-full text-[var(--text-main)]"
+            viewBox="0 0 120 6"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <defs>
+              <filter id="wordmark-jitter" x="-30%" y="-60%" width="160%" height="220%">
+                <feTurbulence type="fractalNoise" baseFrequency="4" numOctaves="2" seed="3" result="noise" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.2" xChannelSelector="R" yChannelSelector="G" />
+              </filter>
+            </defs>
+            <path d="M2 3 C 30 4.5, 70 1.5, 118 3.2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.75" filter="url(#wordmark-jitter)" />
+          </svg>
+        </div>
+        <div className="topbar-divider hidden h-8 w-px border-l border-[color:var(--border)] sm:block" />
         <div className="topbar-play min-w-0">
-          <p className="topbar-eyebrow text-soft font-mono text-[11px] font-semibold uppercase tracking-[0.16em]">Active Play</p>
+          <p className="topbar-eyebrow text-soft text-[11px] font-semibold">Active play</p>
           <p className="topbar-play-name text-main truncate text-sm font-bold md:text-base">{activePlay.name}</p>
         </div>
       </div>
@@ -196,10 +212,10 @@ export function TopBar({
       <div className="flex items-center gap-2 lg:gap-4">
         <div className={['topbar-actions hidden items-center gap-4 lg:flex', isCoachMode ? 'lg:gap-2' : ''].join(' ')}>
           {!isCoachMode && (
-          <label className="panel flex h-10 w-64 items-center gap-3 rounded-md border px-3 text-[var(--text-muted)]">
+          <label className="chrome-surface flex h-10 w-64 items-center gap-3 rounded-md border px-3 text-[var(--text-muted)]">
             <Search size={17} aria-hidden="true" />
             <input
-              className="text-main w-full border-0 bg-transparent p-0 font-mono text-sm outline-none placeholder:text-[var(--text-soft)]"
+              className="text-main w-full border-0 bg-transparent p-0 text-sm outline-none placeholder:text-[var(--text-soft)]"
               placeholder="Search plays..."
               disabled
             />
@@ -207,7 +223,7 @@ export function TopBar({
           )}
           <div className="flex items-center gap-2">
             {statusLabel && (
-              <span className="panel rounded-md border px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--text-muted)]">
+              <span className="chrome-surface rounded-md border px-3 py-2 text-[11px] font-bold text-[var(--text-muted)]">
                 {statusLabel}
               </span>
             )}
@@ -218,31 +234,31 @@ export function TopBar({
                 onClick={onClick}
                 disabled={disabled}
                 className={[
-                  'flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-40',
+                  'flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed',
                   className,
                 ].join(' ')}
                 aria-label={label}
                 title={label}
                 data-guide={guide}
               >
-                <Icon size={19} aria-hidden="true" />
+                <Icon size={19} strokeWidth={1.75} aria-hidden="true" />
               </button>
             ))}
-            {!isCoachMode && <div className="tactical-border h-8 w-px border-l" />}
+            {!isCoachMode && <div className="h-8 w-px border-l border-[color:var(--border)]" />}
             {!isCoachMode && jsonActions.map(({ guide, icon: Icon, label, onClick }) => (
               <button
                 key={label}
                 type="button"
                 onClick={onClick}
-                className="text-muted flex h-9 w-9 items-center justify-center rounded-md transition hover:bg-[var(--accent-muted)]"
+                className="chrome-btn flex h-9 w-9 items-center justify-center rounded-md transition"
                 aria-label={label}
                 title={label}
                 data-guide={guide}
               >
-                <Icon size={19} aria-hidden="true" />
+                <Icon size={19} strokeWidth={1.75} aria-hidden="true" />
               </button>
             ))}
-            {!isCoachMode && <div className="tactical-border h-8 w-px border-l" />}
+            {!isCoachMode && <div className="h-8 w-px border-l border-[color:var(--border)]" />}
             {boardActions.map(({ className, disabled, guide, icon: Icon, label, onClick }) => (
               <button
                 key={label}
@@ -250,14 +266,14 @@ export function TopBar({
                 onClick={onClick}
                 disabled={disabled}
                 className={[
-                  'flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-40',
+                  'flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed',
                   className,
                 ].join(' ')}
                 aria-label={label}
                 title={label}
                 data-guide={guide}
               >
-                <Icon size={19} aria-hidden="true" />
+                <Icon size={19} strokeWidth={1.75} aria-hidden="true" />
               </button>
             ))}
             {!isCoachMode && [
@@ -268,11 +284,11 @@ export function TopBar({
                 key={label}
                 type="button"
                 disabled
-                className="text-muted flex h-9 w-9 items-center justify-center rounded-md opacity-70"
+                className="chrome-btn flex h-9 w-9 items-center justify-center rounded-md opacity-60"
                 aria-label={label}
                 title={label}
               >
-                <Icon size={19} aria-hidden="true" />
+                <Icon size={19} strokeWidth={1.75} aria-hidden="true" />
               </button>
             ))}
           </div>
@@ -281,56 +297,56 @@ export function TopBar({
           type="button"
           onClick={onExportPng}
           disabled={exportStatus === 'exporting'}
-          className="panel-floating flex h-10 w-10 items-center justify-center rounded-md border text-[var(--text-muted)] transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-40 lg:hidden"
+          className="chrome-surface chrome-btn flex h-10 w-10 items-center justify-center rounded-md border transition disabled:cursor-not-allowed lg:hidden"
           aria-label={exportStatus === 'exporting' ? 'Exporting PNG' : 'Export PNG'}
           title={exportStatus === 'exporting' ? 'Exporting PNG' : 'Export PNG'}
           data-guide="export-png-button"
         >
-          <ImageDown size={19} aria-hidden="true" />
+          <ImageDown size={19} strokeWidth={1.75} aria-hidden="true" />
         </button>
         {!isCoachMode && (
         <button
           type="button"
           onClick={onOpenHelp}
-          className="panel-floating flex h-10 w-10 items-center justify-center rounded-md border text-[var(--text-muted)] transition hover:bg-[var(--accent-muted)] lg:hidden"
+          className="chrome-surface chrome-btn flex h-10 w-10 items-center justify-center rounded-md border transition lg:hidden"
           aria-label="How to use"
           title="How to use"
           data-guide="help-button"
         >
-          <HelpCircle size={19} aria-hidden="true" />
+          <HelpCircle size={19} strokeWidth={1.75} aria-hidden="true" />
         </button>
         )}
         <button
           type="button"
           onClick={isCoachMode ? onExitCoachMode : onEnterCoachMode}
-          className="panel-floating flex h-10 w-10 items-center justify-center rounded-md border text-[var(--accent)] transition hover:bg-[var(--accent-muted)] lg:hidden"
+          className={['chrome-surface flex h-10 w-10 items-center justify-center rounded-md border transition lg:hidden', isCoachMode ? 'chrome-btn-active' : 'chrome-btn'].join(' ')}
           aria-label={isCoachMode ? 'Exit Coach Mode' : 'Coach Mode'}
           title={isCoachMode ? 'Exit Coach Mode' : 'Coach Mode'}
           data-guide="coach-mode-button"
         >
-          {isCoachMode ? <ScreenShareOff size={19} aria-hidden="true" /> : <MonitorPlay size={19} aria-hidden="true" />}
+          {isCoachMode ? <ScreenShareOff size={19} strokeWidth={1.75} aria-hidden="true" /> : <MonitorPlay size={19} strokeWidth={1.75} aria-hidden="true" />}
         </button>
         {!isCoachMode && (
         <button
           type="button"
           onClick={onSaveAsCustomPlay}
-          className="panel-floating flex h-10 w-10 items-center justify-center rounded-md border text-[var(--accent)] transition hover:bg-[var(--accent-muted)] lg:hidden"
+          className="chrome-surface chrome-btn flex h-10 w-10 items-center justify-center rounded-md border transition lg:hidden"
           aria-label="Save as custom play"
           title="Save as custom play"
           data-guide="save-as-play-button"
         >
-          <FilePlus2 size={19} aria-hidden="true" />
+          <FilePlus2 size={19} strokeWidth={1.75} aria-hidden="true" />
         </button>
         )}
         {!isCoachMode && (
         <button
           type="button"
           onClick={onResetToPlayDefaults}
-          className="panel-floating hidden h-10 w-10 items-center justify-center rounded-md border text-[var(--text-muted)] transition hover:bg-[var(--accent-muted)] sm:flex lg:hidden"
+          className="chrome-surface chrome-btn hidden h-10 w-10 items-center justify-center rounded-md border transition sm:flex lg:hidden"
           aria-label="Reset to play defaults"
           title="Reset to play defaults"
         >
-          <RotateCcw size={19} aria-hidden="true" />
+          <RotateCcw size={19} strokeWidth={1.75} aria-hidden="true" />
         </button>
         )}
         {!isCoachMode && (
@@ -338,21 +354,21 @@ export function TopBar({
           type="button"
           onClick={onClearBoard}
           disabled={!canClearBoard}
-          className="panel-floating hidden h-10 w-10 items-center justify-center rounded-md border text-[var(--defense)] transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-40 sm:flex lg:hidden"
+          className="chrome-surface chrome-btn hidden h-10 w-10 items-center justify-center rounded-md border text-[var(--defense)] transition disabled:cursor-not-allowed sm:flex lg:hidden"
           aria-label={clearBoardLabel}
           title={clearBoardLabel}
         >
-          <Trash2 size={18} aria-hidden="true" />
+          <Trash2 size={18} strokeWidth={1.75} aria-hidden="true" />
         </button>
         )}
         <button
           type="button"
           onClick={onToggleTheme}
-          className="panel-floating flex h-10 w-10 items-center justify-center rounded-md border text-[var(--accent)] transition hover:bg-[var(--accent-muted)]"
+          className="chrome-surface chrome-btn flex h-10 w-10 items-center justify-center rounded-md border transition"
           aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
           title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
         >
-          {theme === 'dark' ? <Sun size={19} aria-hidden="true" /> : <Moon size={19} aria-hidden="true" />}
+          {theme === 'dark' ? <Sun size={19} strokeWidth={1.75} aria-hidden="true" /> : <Moon size={19} strokeWidth={1.75} aria-hidden="true" />}
         </button>
       </div>
     </header>

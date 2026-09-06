@@ -1000,11 +1000,11 @@ function App() {
           <button
             type="button"
             onClick={handleToggleTacticalPanel}
-            className="panel-floating accent-text absolute left-3 top-3 z-30 rounded-md border px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.1em] transition hover:bg-[var(--accent-muted)] md:left-5 md:top-5"
+            className="chrome-surface chrome-btn absolute left-3 top-3 z-30 rounded-md border px-2.5 py-2 text-[11px] font-bold transition md:left-5 md:top-5"
             aria-label="Expand tactical panel"
             title="Expand tactical panel"
           >
-            Expand Panel
+            Expand panel
           </button>
         )}
       </motion.div> : activeSection === 'playbook' ? (

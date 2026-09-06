@@ -54,34 +54,34 @@ export function PlayDetailsPanel({
   const selectedPlayerHasBall = Boolean(selectedPlayer && selectedPlayer.id === ballCarrierId)
 
   return (
-    <aside className={['play-details-panel panel-floating w-full border-t p-4 pb-8 xl:absolute xl:left-6 xl:top-6 xl:z-30 xl:max-h-[calc(100dvh-190px)] xl:w-[340px] xl:overflow-y-auto xl:overscroll-contain xl:border xl:pb-4 xl:pr-3', isCollapsed ? 'hidden' : ''].join(' ')}>
+    <aside className={['play-details-panel chrome-surface w-full border-t p-4 pb-8 xl:absolute xl:left-6 xl:top-6 xl:z-30 xl:max-h-[calc(100dvh-190px)] xl:w-[340px] xl:overflow-y-auto xl:overscroll-contain xl:border xl:pb-4 xl:pr-3', isCollapsed ? 'hidden' : ''].join(' ')}>
       <button
         type="button"
         onClick={onToggleCollapsed}
-        className="panel mb-4 flex h-9 w-full items-center justify-center gap-2 rounded-md border text-[var(--text-muted)] transition hover:bg-[var(--accent-muted)]"
+        className="chrome-surface chrome-btn mb-4 flex h-9 w-full items-center justify-center gap-2 rounded-md border transition"
         aria-label="Collapse tactical panel"
         title="Collapse tactical panel"
       >
-        <PanelLeftClose size={16} aria-hidden="true" />
-        <span className="font-mono text-[11px] font-bold uppercase tracking-[0.12em]">Collapse Panel</span>
+        <PanelLeftClose size={16} strokeWidth={1.75} aria-hidden="true" />
+        <span className="text-[11px] font-bold">Collapse panel</span>
       </button>
       <div className="play-details-selector">
         <PlaySelector plays={plays} selectedPlayId={play.id} onSelect={onSelectPlay} />
       </div>
 
-      <div className="play-details-header tactical-border mt-5 border-t pt-5">
+      <div className="play-details-header mt-5 border-t border-[color:var(--border)] pt-5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="accent-text font-mono text-[11px] uppercase tracking-[0.16em]">{play.category}</p>
-            <h2 className="text-main mt-1 font-display text-2xl tracking-[0.05em]">{play.name}</h2>
+            <p className="text-soft text-[11px] font-semibold">{play.category}</p>
+            <h2 className="text-main mt-1 font-display text-2xl">{play.name}</h2>
           </div>
           <div className="flex flex-col items-end gap-2">
             {(play.source === 'custom' || play.isCustom) && (
-              <span className="panel rounded-sm border px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--text-muted)]">
+              <span className="chrome-surface rounded-sm border px-2 py-1 text-[10px] font-bold text-[var(--text-muted)]">
                 Custom
               </span>
             )}
-            <span className="accent-badge rounded-sm px-2 py-1 font-mono text-[11px] font-bold">
+            <span className="chrome-surface rounded-sm border px-2 py-1 text-[11px] font-bold text-[var(--text-muted)]">
               {play.difficulty}
             </span>
           </div>
@@ -89,19 +89,19 @@ export function PlayDetailsPanel({
         <p className="play-description text-muted mt-4 text-sm leading-6">{play.description}</p>
       </div>
 
-      <div className="play-objective tactical-border mt-5 border-t pt-5">
-        <h3 className="text-soft font-mono text-[11px] uppercase tracking-[0.16em]">Objective</h3>
+      <div className="play-objective mt-5 border-t border-[color:var(--border)] pt-5">
+        <h3 className="text-soft text-[11px] font-bold">Objective</h3>
         <p className="text-muted mt-2 text-sm leading-6">{play.objective}</p>
       </div>
 
-      <div className="strategy-notes tactical-border mt-5 border-t pt-5">
+      <div className="strategy-notes mt-5 border-t border-[color:var(--border)] pt-5">
         <div className="flex items-center justify-between gap-3">
-          <h3 className="text-soft font-mono text-[11px] uppercase tracking-[0.16em]">Coaching Points</h3>
+          <h3 className="text-soft text-[11px] font-bold">Coaching points</h3>
           {canEditTimeline && (
             <button
               type="button"
               onClick={onAddCoachingPoint}
-              className="accent-text rounded-sm px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] transition hover:bg-[var(--accent-muted)]"
+              className="chrome-btn rounded-sm px-2 py-1 text-[11px] font-bold transition"
               aria-label="Add coaching point"
               title="Add coaching point"
             >
@@ -111,7 +111,7 @@ export function PlayDetailsPanel({
         </div>
         <div className="mt-3 grid gap-2">
           {(play.coachingPoints?.length ? play.coachingPoints : ['Keep spacing balanced before the action starts.', 'Read the help defender before committing to the pass.']).map((note, index) => (
-            <div key={`${note}-${index}`} className="panel flex items-start justify-between gap-3 rounded-md border p-2 text-xs text-[var(--text-muted)]">
+            <div key={`${note}-${index}`} className="border border-[color:var(--border)] flex items-start justify-between gap-3 rounded-md p-2 text-xs text-[var(--text-muted)]">
               <span>{note}</span>
               {canEditTimeline && play.coachingPoints?.length ? (
                 <button
@@ -129,8 +129,8 @@ export function PlayDetailsPanel({
         </div>
       </div>
 
-      <div className="current-read tactical-border mt-5 border-t pt-5">
-        <h3 className="text-soft font-mono text-[11px] uppercase tracking-[0.16em]">
+      <div className="current-read mt-5 border-t border-[color:var(--border)] pt-5">
+        <h3 className="text-soft text-[11px] font-bold">
           {isEditMode ? 'Selected player' : 'Current read'}
         </h3>
         {isEditMode ? (
@@ -142,7 +142,12 @@ export function PlayDetailsPanel({
                 : 'Select a player on the court to inspect or assign the ball.'}
             </p>
             {selectedPlayer && (
-              <p className="accent-text mt-2 font-mono text-[11px] uppercase tracking-[0.12em]">
+              <p className="text-soft mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold">
+                <span
+                  className="h-1.5 w-1.5 rounded-full"
+                  style={{ background: ballCarrierId === selectedPlayer.id ? 'var(--ball)' : 'var(--border)' }}
+                  aria-hidden="true"
+                />
                 {ballCarrierId === selectedPlayer.id ? 'Has ball' : 'No ball'}
               </p>
             )}
@@ -150,9 +155,9 @@ export function PlayDetailsPanel({
               type="button"
               onClick={onAssignBall}
               disabled={!selectedPlayer || selectedPlayerHasBall}
-              className="accent-badge mt-3 rounded-md px-3 py-2 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-40"
+              className="chrome-btn-primary mt-3 rounded-md px-3 py-2 text-xs font-bold transition disabled:cursor-not-allowed"
             >
-              {selectedPlayerHasBall ? 'Has Ball' : selectedPlayer ? 'Assign Ball' : 'Select player'}
+              {selectedPlayerHasBall ? 'Has ball' : selectedPlayer ? 'Assign ball' : 'Select player'}
             </button>
           </div>
         ) : (
@@ -163,11 +168,11 @@ export function PlayDetailsPanel({
         )}
       </div>
 
-      <div className="timeline-editor tactical-border mt-5 border-t pt-5">
+      <div className="timeline-editor mt-5 border-t border-[color:var(--border)] pt-5">
         <div className="flex items-center justify-between gap-3">
-          <h3 className="text-soft font-mono text-[11px] uppercase tracking-[0.16em]">Step Editor</h3>
+          <h3 className="text-soft text-[11px] font-bold">Step editor</h3>
           {!canEditTimeline && (
-            <span className="text-soft font-mono text-[10px] uppercase tracking-[0.12em]">Duplicate to edit</span>
+            <span className="text-soft text-[10px]">Duplicate to edit</span>
           )}
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
@@ -182,7 +187,7 @@ export function PlayDetailsPanel({
               type="button"
               onClick={item.action}
               disabled={!canEditTimeline}
-              className="panel rounded-md border px-3 py-2 text-xs font-bold text-[var(--text-main)] transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-40"
+              className="chrome-surface chrome-btn rounded-md border px-3 py-2 text-xs font-bold transition disabled:cursor-not-allowed"
               aria-label={item.title}
               title={item.title}
               data-guide={item.label === '+ Step' ? 'add-step-button' : item.label === 'Update' ? 'update-step-button' : undefined}
@@ -194,28 +199,28 @@ export function PlayDetailsPanel({
             type="button"
             onClick={onDeleteStep}
             disabled={!canEditTimeline || play.steps.length <= 1}
-            className="panel col-span-2 rounded-md border px-3 py-2 text-xs font-bold text-[var(--defense)] transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-40"
+            className="chrome-surface chrome-btn col-span-2 rounded-md border px-3 py-2 text-xs font-bold text-[var(--defense)] transition disabled:cursor-not-allowed"
             aria-label={canEditTimeline ? 'Delete current step' : 'Available for custom plays'}
             title={play.steps.length <= 1 ? 'A custom play needs at least one step' : canEditTimeline ? 'Delete current step' : 'Available for custom plays'}
           >
-            Delete Step
+            Delete step
           </button>
           <button
             type="button"
             onClick={onClearStepAnnotations}
             disabled={!canEditTimeline || (activeStep?.annotations ?? []).length === 0}
-            className="panel col-span-2 rounded-md border px-3 py-2 text-xs font-bold text-[var(--text-muted)] transition hover:bg-[var(--accent-muted)] disabled:cursor-not-allowed disabled:opacity-40"
+            className="chrome-surface chrome-btn col-span-2 rounded-md border px-3 py-2 text-xs font-bold transition disabled:cursor-not-allowed"
             aria-label="Clear annotations for current step"
             title={(activeStep?.annotations ?? []).length === 0 ? 'No annotations on this step' : 'Clear annotations for current step'}
             data-guide="clear-annotations-button"
           >
-            Clear Annotations
+            Clear annotations
           </button>
         </div>
       </div>
 
-      <div className="annotation-tools tactical-border mt-5 border-t pt-5 lg:hidden">
-        <h3 className="text-soft font-mono text-[11px] uppercase tracking-[0.16em]">Drawing Tools</h3>
+      <div className="annotation-tools mt-5 border-t border-[color:var(--border)] pt-5 lg:hidden">
+        <h3 className="text-soft text-[11px] font-bold">Drawing tools</h3>
         <div className="mt-3 grid grid-cols-4 gap-2">
           {[
             { label: 'Move', tool: 'movement' },
@@ -234,8 +239,8 @@ export function PlayDetailsPanel({
                 onClick={() => onSelectTool?.(tool)}
                 disabled={disabled}
                 className={[
-                  'rounded-md border px-2 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.08em] transition disabled:cursor-not-allowed disabled:opacity-40',
-                  isActive ? 'accent-badge' : 'panel text-[var(--text-muted)] hover:bg-[var(--accent-muted)]',
+                  'rounded-md border px-2 py-2 text-[11px] font-bold transition disabled:cursor-not-allowed disabled:opacity-40',
+                  isActive ? 'chrome-btn-active border-transparent' : 'chrome-surface chrome-btn',
                 ].join(' ')}
                 aria-label={disabled ? 'Duplicate this play to edit annotations' : item.label}
                 title={disabled ? 'Duplicate this play to edit annotations' : item.label}
@@ -247,7 +252,7 @@ export function PlayDetailsPanel({
         </div>
       </div>
 
-      <ol className="play-steps tactical-border mt-5 grid gap-2 border-t pt-5">
+      <ol className="play-steps mt-5 grid gap-2 border-t border-[color:var(--border)] pt-5">
         {play.steps.map((step, index) => {
           const isActive = index === activeStepIndex
           const isDone = index < activeStepIndex
@@ -258,14 +263,14 @@ export function PlayDetailsPanel({
               className={[
                 'border px-3 py-2 text-sm',
                 isActive
-                  ? 'accent-badge'
+                  ? 'chrome-badge-active border-transparent'
                   : isDone
-                    ? 'tactical-border-strong bg-[var(--surface)]'
-                    : 'tactical-border bg-[var(--surface-strong)]',
+                    ? 'chrome-btn border-[color:var(--border)]'
+                    : 'chrome-btn border-[color:var(--border)] opacity-70',
               ].join(' ')}
             >
-              <span className="accent-text font-mono text-[11px]">{String(index + 1).padStart(2, '0')}</span>
-              <span className="text-main ml-3 font-semibold">{step.title}</span>
+              <span className={['font-mono text-[11px]', isActive ? '' : 'text-[var(--text-soft)]'].join(' ')}>{String(index + 1).padStart(2, '0')}</span>
+              <span className={['ml-3 font-semibold', isActive ? '' : 'text-[var(--text-main)]'].join(' ')}>{step.title}</span>
             </li>
           )
         })}
@@ -273,7 +278,7 @@ export function PlayDetailsPanel({
 
       <div className="play-concepts mt-5 flex flex-wrap gap-2">
         {play.concepts.map((concept) => (
-          <span key={concept} className="accent-badge border-l-2 border-l-[var(--accent)] px-2.5 py-1 font-mono text-[11px] uppercase tracking-wide">
+          <span key={concept} className="border-l-2 border-l-[var(--text-soft)] bg-[color:var(--chrome-surface)] px-2.5 py-1 text-[11px] text-[var(--text-muted)]">
             {concept}
           </span>
         ))}

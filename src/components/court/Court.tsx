@@ -56,6 +56,10 @@ export function Court({
   const [drawingPreview, setDrawingPreview] = useState<{ from: Position; to: Position; type: 'movement' | 'pass' }>()
   const pathStartPositions =
     activeStepIndex > 0 ? getStepPositions(play, activeStepIndex - 1) : getInitialPositions(play.initialPlayers)
+  const previousStepIndex = activeStepIndex - 1
+  const ghostStep = previousStepIndex >= 0 ? play.steps[previousStepIndex] : undefined
+  const ghostFromPositions =
+    previousStepIndex > 0 ? getStepPositions(play, previousStepIndex - 1) : getInitialPositions(play.initialPlayers)
   const carrierId = ballCarrierId ?? activeStep?.ball?.carrierId ?? play.initialPlayers.find((player) => player.hasBall)?.id
   const visiblePlayers = players ?? play.initialPlayers
 
@@ -127,7 +131,6 @@ export function Court({
       'court-stage relative flex w-full items-center justify-center overflow-hidden bg-transparent p-3 sm:p-4 md:p-5',
       isCoachMode ? 'min-h-[calc(100dvh-170px)] md:min-h-[calc(100dvh-150px)]' : 'min-h-[360px] md:min-h-[min(58vh,660px)]',
     ].join(' ')}>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--accent-muted),transparent_42%)]" />
       <div
         ref={boardRef}
         className={[
@@ -143,9 +146,17 @@ export function Court({
         data-guide="court-board"
       >
         <CourtGrid />
-        <div className="absolute inset-0 border border-[color:var(--border-strong)]" />
+        <div className="absolute inset-0 border border-[color:var(--court-frame)]" />
         <CourtLines />
-        {!isEditMode && <MovementPath fromPositions={pathStartPositions} step={activeStep} />}
+        {!isEditMode && (
+          <MovementPath
+            fromPositions={pathStartPositions}
+            step={activeStep}
+            players={visiblePlayers}
+            ghostFromPositions={ghostFromPositions}
+            ghostStep={ghostStep}
+          />
+        )}
         <TacticalAnnotationsLayer
           annotations={annotations}
           eraseEnabled={isEditMode && canEditAnnotations && activeTool === 'erase'}
@@ -160,6 +171,7 @@ export function Court({
             isEditable={isEditMode}
             isBallHandler={carrierId === player.id}
             isSelected={selectedPlayerId === player.id}
+            isDragging={draggingPlayerId === player.id}
             onPointerDown={(event) => {
               if (!isEditMode || activeTool !== 'select') {
                 return

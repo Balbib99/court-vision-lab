@@ -154,9 +154,10 @@ export function AppShell({
         onToggleTheme={onToggleTheme}
       />
       {!isCoachMode && (
-        <nav className="panel-glass flex gap-2 overflow-x-auto border-b px-3 py-2 md:hidden" aria-label="Primary navigation">
+        <nav className="chrome-surface flex gap-2 overflow-x-auto border-b px-3 py-2 md:hidden" aria-label="Primary navigation">
           {mobileSections.map((section) => {
             const isActive = activeSection === section
+            const label = section.charAt(0).toUpperCase() + section.slice(1)
 
             return (
               <button
@@ -164,15 +165,15 @@ export function AppShell({
                 type="button"
                 onClick={() => onSelectSection(section)}
                 className={[
-                  'min-w-fit rounded-md px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] transition',
-                  isActive ? 'accent-bg' : 'text-muted hover:bg-[var(--accent-muted)]',
+                  'min-w-fit rounded-md px-3 py-2 text-xs font-bold transition',
+                  isActive ? 'chrome-badge-active' : 'chrome-btn',
                 ].join(' ')}
                 aria-current={isActive ? 'page' : undefined}
-                aria-label={section}
-                title={section}
+                aria-label={label}
+                title={label}
                 data-guide={`${section}-nav`}
               >
-                {section}
+                {label}
               </button>
             )
           })}

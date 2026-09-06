@@ -16,19 +16,19 @@ type SidebarProps = {
 
 export function Sidebar({ activeSection, onSelectSection }: SidebarProps) {
   return (
-    <aside className="sidebar panel-glass hidden w-28 shrink-0 flex-col border-r py-5 md:flex xl:w-32">
-      <div className="sidebar-logo mb-8 flex justify-center">
+    <aside className="sidebar chrome-surface hidden w-20 shrink-0 flex-col border-r py-5 md:flex xl:w-24">
+      <div className="sidebar-logo mb-6 flex justify-center">
         <button
           type="button"
           onClick={() => onSelectSection('board')}
-          className="sidebar-logo-mark accent-bg-soft tactical-border-strong accent-text flex h-12 w-12 items-center justify-center rounded-md border font-display text-lg"
+          className="sidebar-logo-mark chrome-btn flex h-11 w-11 items-center justify-center rounded-md border border-[color:var(--border)] font-display text-base text-[var(--text-main)]"
           aria-label="Go to board"
           title="Go to board"
         >
           CV
         </button>
       </div>
-      <nav className="sidebar-nav flex flex-1 flex-col items-center gap-3">
+      <nav className="sidebar-nav flex flex-1 flex-col items-center gap-2">
         {navItems.map(({ id, label, icon: Icon }) => {
           const isActive = activeSection === id
 
@@ -38,18 +38,19 @@ export function Sidebar({ activeSection, onSelectSection }: SidebarProps) {
               type="button"
               onClick={() => onSelectSection(id)}
               className={[
-                'sidebar-item flex w-[92px] flex-col items-center justify-center gap-1.5 rounded-md px-1.5 py-3 text-[10px] font-black uppercase tracking-wide transition xl:w-[104px]',
-                isActive
-                  ? 'is-active accent-bg'
-                  : 'text-muted opacity-80 hover:bg-[var(--accent-muted)]',
+                'sidebar-item relative flex w-16 flex-col items-center justify-center gap-1.5 rounded-md px-1.5 py-3 text-[10px] font-bold transition xl:w-[76px]',
+                isActive ? 'is-active text-[var(--text-main)]' : 'chrome-btn opacity-80',
               ].join(' ')}
               title={label}
               aria-label={label}
               aria-current={isActive ? 'page' : undefined}
               data-guide={`${id}-nav`}
             >
-              <Icon size={22} aria-hidden="true" />
-              <span className="sidebar-label w-full truncate text-center leading-tight">{label}</span>
+              {isActive && (
+                <span className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-full bg-[var(--text-main)]" aria-hidden="true" />
+              )}
+              <Icon size={21} strokeWidth={1.75} aria-hidden="true" />
+              <span className="sidebar-label w-full text-center leading-tight">{label}</span>
             </button>
           )
         })}
@@ -57,11 +58,11 @@ export function Sidebar({ activeSection, onSelectSection }: SidebarProps) {
       <button
         type="button"
         disabled
-        className="sidebar-settings text-muted mx-auto flex h-12 w-12 items-center justify-center rounded-md opacity-70"
+        className="sidebar-settings chrome-btn mx-auto flex h-11 w-11 items-center justify-center rounded-md"
         title="Settings coming soon"
         aria-label="Settings coming soon"
       >
-        <Settings size={23} aria-hidden="true" />
+        <Settings size={21} strokeWidth={1.75} aria-hidden="true" />
       </button>
     </aside>
   )

@@ -1,3 +1,4 @@
+import { AnimatePresence } from 'framer-motion'
 import type { Position, TacticalAnnotation as TacticalAnnotationType } from '../../types/play'
 import { COURT_HEIGHT, COURT_WIDTH } from '../../utils/positions'
 import { TacticalAnnotation } from './TacticalAnnotation'
@@ -35,14 +36,16 @@ export function TacticalAnnotationsLayer({
         </marker>
       </defs>
       <g className={eraseEnabled ? 'pointer-events-auto' : 'pointer-events-none'}>
-        {annotations.map((annotation) => (
-          <TacticalAnnotation
-            key={annotation.id}
-            annotation={annotation}
-            isEditable={eraseEnabled}
-            onErase={onEraseAnnotation}
-          />
-        ))}
+        <AnimatePresence>
+          {annotations.map((annotation) => (
+            <TacticalAnnotation
+              key={annotation.id}
+              annotation={annotation}
+              isEditable={eraseEnabled}
+              onErase={onEraseAnnotation}
+            />
+          ))}
+        </AnimatePresence>
       </g>
       {preview && (
         <line
@@ -55,6 +58,7 @@ export function TacticalAnnotationsLayer({
           strokeDasharray={preview.type === 'pass' ? '1.4 1.3' : undefined}
           strokeLinecap="round"
           markerEnd={preview.type === 'pass' ? 'url(#manual-pass-arrow)' : 'url(#manual-movement-arrow)'}
+          filter="url(#ink-jitter)"
           opacity="0.72"
         />
       )}

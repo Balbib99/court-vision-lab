@@ -1,40 +1,48 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  --font-display: "League Spartan", "Arial Narrow", sans-serif;
   --font-sans: "Hanken Grotesk", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
 }
 
 :root,
 [data-theme='dark'] {
-  --background: #111827;
-  --background-soft: #172033;
+  /* "Film room": the whiteboard with the lights off, not a mirrored dark theme. */
+  --background: #14171a;
+  --background-soft: #1b1f23;
   --surface: rgba(30, 41, 59, 0.64);
   --surface-strong: rgba(15, 23, 42, 0.76);
   --surface-glass: rgba(30, 41, 59, 0.42);
   --surface-float: rgba(17, 24, 39, 0.48);
-  --border: rgba(148, 163, 184, 0.18);
+  --border: rgba(236, 233, 225, 0.12);
   --border-strong: rgba(248, 189, 122, 0.28);
-  --text-main: #f8fafc;
-  --text-muted: #cbd5e1;
-  --text-soft: #94a3b8;
+  --text-main: #ece9e1;
+  --text-muted: #a6abb1;
+  --text-soft: #898e94;
+  --ghost-ink: rgba(236, 233, 225, 0.12);
+  --highlight: #ffd866;
+  --highlight-text: #14171a;
+  --court-frame: rgba(236, 233, 225, 0.32);
+  --chrome-surface: #20242a;
   --accent: #f6a04d;
   --accent-soft: #f8bd7a;
   --accent-muted: rgba(246, 160, 77, 0.14);
-  --court-bg: rgba(120, 78, 42, 0.18);
-  --court-line: rgba(248, 189, 122, 0.62);
-  --court-grid: rgba(248, 189, 122, 0.08);
-  --offense: #38bdf8;
-  --offense-text: #082f49;
-  --defense: #fb7185;
-  --defense-text: #fff1f2;
-  --ball: #fb923c;
+  --court-bg: #171b1f;
+  --court-line: rgba(236, 233, 225, 0.55);
+  --court-grid: rgba(201, 214, 227, 0.1);
+  --offense: #2f6fe0;
+  --offense-text: #ffffff;
+  --defense: #d6402c;
+  --defense-text: #ffffff;
+  --ball: #4fbe85;
+  --ball-text: #ffffff;
   --success: #34d399;
   --warning: #fbbf24;
   --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.22);
   --shadow-panel: 0 24px 70px rgba(2, 6, 23, 0.24);
   --shadow-strong: 0 28px 80px rgba(2, 6, 23, 0.34);
+  --shadow-marker: 0 3px 6px rgba(0, 0, 0, 0.35);
   --glass-highlight: rgba(255, 255, 255, 0.1);
   color-scheme: dark;
 }
@@ -51,33 +59,41 @@
 }
 
 [data-theme='light'] {
-  --background: #f5f0e8;
-  --background-soft: #ebe3d6;
+  /* "The whiteboard": light is the protagonist theme, not the muted fallback. */
+  --background: #f4f2ed;
+  --background-soft: #ece9e1;
   --surface: rgba(255, 255, 255, 0.66);
   --surface-strong: rgba(255, 255, 255, 0.84);
   --surface-glass: rgba(255, 255, 255, 0.48);
   --surface-float: rgba(255, 250, 244, 0.56);
-  --border: rgba(120, 78, 42, 0.18);
+  --border: rgba(35, 38, 43, 0.14);
   --border-strong: rgba(217, 119, 6, 0.28);
-  --text-main: #1f2937;
-  --text-muted: #475569;
-  --text-soft: #64748b;
+  --text-main: #23262b;
+  --text-muted: #55595f;
+  --text-soft: #63676c;
+  --ghost-ink: rgba(35, 38, 43, 0.1);
+  --highlight: #f4c430;
+  --highlight-text: #23262b;
+  --court-frame: rgba(35, 38, 43, 0.32);
+  --chrome-surface: #ffffff;
   --accent: #d97706;
   --accent-soft: #f59e0b;
   --accent-muted: rgba(217, 119, 6, 0.14);
-  --court-bg: rgba(217, 119, 6, 0.1);
-  --court-line: rgba(146, 64, 14, 0.52);
-  --court-grid: rgba(146, 64, 14, 0.08);
-  --offense: #0284c7;
-  --offense-text: #f0f9ff;
-  --defense: #be123c;
-  --defense-text: #fff1f2;
-  --ball: #ea580c;
+  --court-bg: #fdfcfa;
+  --court-line: rgba(35, 38, 43, 0.55);
+  --court-grid: rgba(201, 214, 227, 0.35);
+  --offense: #1d5fbf;
+  --offense-text: #ffffff;
+  --defense: #d1382b;
+  --defense-text: #ffffff;
+  --ball: #2f8f5b;
+  --ball-text: #ffffff;
   --success: #059669;
   --warning: #d97706;
   --shadow-soft: 0 18px 45px rgba(120, 78, 42, 0.13);
   --shadow-panel: 0 24px 70px rgba(120, 78, 42, 0.13);
   --shadow-strong: 0 28px 80px rgba(120, 78, 42, 0.16);
+  --shadow-marker: 0 3px 6px rgba(35, 38, 43, 0.22);
   --glass-highlight: rgba(255, 255, 255, 0.68);
   color-scheme: light;
 }
@@ -100,8 +116,9 @@ select {
 
 button:focus-visible,
 select:focus-visible,
-a:focus-visible {
-  outline: 2px solid var(--accent-soft);
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--text-main);
   outline-offset: 2px;
 }
 
@@ -188,9 +205,9 @@ a:focus-visible {
 
 .tour-highlight {
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent),
-    0 0 26px var(--accent-muted),
-    inset 0 0 22px color-mix(in srgb, var(--accent-muted) 58%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--highlight) 65%, transparent),
+    0 0 26px color-mix(in srgb, var(--highlight) 35%, transparent),
+    inset 0 0 22px color-mix(in srgb, var(--highlight) 18%, transparent);
   animation: tour-pulse 1.6s ease-in-out infinite;
 }
 
@@ -247,17 +264,62 @@ a:focus-visible {
 }
 
 .court-surface {
-  background:
-    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 44%),
-    radial-gradient(circle at 16% 24%, color-mix(in srgb, var(--offense) 7%, transparent), transparent 24%),
-    linear-gradient(135deg, var(--court-bg), color-mix(in srgb, var(--surface-strong) 68%, transparent));
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow-strong);
-  backdrop-filter: blur(8px);
+  /* Flat board, mounted on the wall — no glass, no ambient glow. */
+  background: var(--court-bg);
+  border-color: var(--court-frame);
+  box-shadow: var(--shadow-panel);
 }
 
 .disabled-control {
   opacity: 0.58;
+}
+
+/* Chrome (Block 2): flat surfaces, two-tier buttons — no glass, no glow.
+   Only used by TopBar/Sidebar/RightToolbar/BottomControls/AppShell; the
+   Block 3/4 views keep .panel*/.accent-* until their own pass. */
+.chrome-surface {
+  background: var(--chrome-surface);
+  border-color: var(--border);
+  box-shadow: var(--shadow-panel);
+}
+
+.chrome-btn {
+  color: var(--text-muted);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.chrome-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--text-main) 8%, transparent);
+  color: var(--text-main);
+}
+
+.chrome-btn:disabled {
+  opacity: 0.4;
+}
+
+.chrome-btn-primary {
+  background: var(--text-main);
+  color: var(--background);
+  box-shadow: var(--shadow-panel);
+}
+
+.chrome-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.chrome-btn-primary:disabled {
+  opacity: 0.4;
+}
+
+.chrome-btn-active {
+  background: var(--text-main);
+  color: var(--background);
+  box-shadow: 0 0 0 2px var(--highlight);
+}
+
+.chrome-badge-active {
+  background: var(--text-main);
+  color: var(--background);
 }
 
 .ball-seam {
